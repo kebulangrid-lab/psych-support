@@ -33,7 +33,7 @@ export default function ClientDashboard() {
         <div className="flex-1 ml-[80px] z-10 flex flex-col min-h-screen">
 
           {/* Top Bar */}
-          <div className="w-full flex justify-end items-center px-8 pt-6 pb-0">
+          <div className="w-full flex justify-end items-center px-8 pt-4 pb-0">
             <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 w-full max-w-sm shadow-lg">
               <FaSearch className="text-white/60 flex-shrink-0" size={14} />
               <input
@@ -45,7 +45,7 @@ export default function ClientDashboard() {
           </div>
 
           {/* Content */}
-          <div className="flex-1 px-8 pt-8 pb-0 flex flex-col">
+          <div className="flex-1 px-8 pt-6 pb-0 flex flex-col">
 
             {/* Glassmorphism Card */}
             <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-sm rounded-[28px] p-10 md:p-14 flex flex-col gap-10">
@@ -63,12 +63,12 @@ export default function ClientDashboard() {
               </div>
 
               {/* Quick Links Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 max-w-3xl mx-auto w-full">
                 {quickLinks.map((item, i) => (
                   <Link
                     key={i}
                     href={item.href}
-                    className="flex items-center justify-center px-6 py-4 rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-sm md:text-base hover:bg-[#0d1040]/80 hover:border-white/40"
+                    className="flex items-center justify-center px-6 py-4 rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-center text-sm md:text-base hover:bg-[#0d1040]/80 hover:border-white/40"
                   >
                     {item.label}
                   </Link>
@@ -76,7 +76,7 @@ export default function ClientDashboard() {
               </div>
 
               {/* Back Button */}
-              <div>
+              <div className="mt-16">
                 <Link
                   href="/"
                   className="inline-flex items-center justify-center px-10 py-3.5 rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-sm hover:bg-[#0d1040]/80 hover:border-white/40 "
