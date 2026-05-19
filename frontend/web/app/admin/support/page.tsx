@@ -49,7 +49,7 @@ export default function AdminSupport() {
           <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           {/* Content */}
-          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start mt-8">
+          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             {/* Glassmorphism Card */}
             <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-8 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[auto] sm:min-h-[600px]">
               
