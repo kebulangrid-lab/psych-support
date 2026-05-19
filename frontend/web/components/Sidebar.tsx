@@ -17,7 +17,7 @@ interface SidebarProps {
   role?: "client" | "admin";
 }
 
-export default function Sidebar({ active, role = "admin" }: SidebarProps) {
+export default function Sidebar({ active, role = "client" }: SidebarProps) {
   return (
     <div className="flex sm:flex-col">
       <aside className="fixed bottom-0 left-0 right-0 w-full z-50 flex flex-row items-center sm:top-0 sm:bottom-0 sm:right-auto sm:w-20 sm:flex-col sm:py-6">

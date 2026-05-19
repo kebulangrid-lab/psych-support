@@ -1,31 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import { FaSearch, FaDownload } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp, FaFilePdf, FaDownload } from "react-icons/fa";
 
-export default function ResourcesPage() {
-  const resourceCards = Array(6).fill({
-    title: "Resources Name",
-    subtitle: "PDF | Click to download",
-  });
+export default function ClientResources() {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const uploadHistory = [
-    {
-      title: "Pyschology beginners guide",
-      module: "2.4",
-      type: "PDF",
-      date: "14/03/2026",
-    },
-    {
-      title: "Therapy beginners guide",
-      module: "2.4",
-      type: "PDF",
-      date: "14/03/2026",
-    },
-  ];
+  const [programs] = useState([
+    { id: 1, name: "360 ° Stress Management", resources: [{ id: 101, name: "Stress Relief Guide" }] },
+    { id: 2, name: "Psych-Support Program 2", resources: [] }
+  ]);
+
+  const toggleExpand = (id: number) => {
+    setExpandedId(prev => (prev === id ? null : id));
+  };
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
@@ -36,7 +28,7 @@ export default function ResourcesPage() {
           alt="Background"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-[#1a2060]/70" />
       </div>
@@ -46,86 +38,84 @@ export default function ResourcesPage() {
         <Sidebar active="Resources" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
           
-          {/* Top Bar */}
-          <div className="w-full flex justify-end items-center px-8 pt-4 pb-0">
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 w-full max-w-sm shadow-lg">
-              <FaSearch className="text-white/60 flex-shrink-0" size={14} />
-              <input
-                type="text"
-                placeholder="Type to search resources"
-                className="bg-transparent text-white/80 placeholder-white/50 text-sm outline-none w-full"
-              />
-            </div>
-          </div>
+          <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           {/* Content */}
-          <div className="flex-1 px-8 pt-6 pb-0 flex flex-col">
+          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             {/* Glassmorphism Card */}
-            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[28px] p-6 sm:p-10 md:p-14 mb-8 sm:mb-16 flex flex-col gap-6 sm:gap-10">
+            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-24 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[auto] sm:min-h-[600px]">
               
               {/* Heading */}
               <div>
-                <h1 className="text-5xl md:text-7xl font-extrabold mb-4">
-                  Resources
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold mb-3 drop-shadow-lg uppercase tracking-wide">
+                  Learning Resources
                 </h1>
-                <p className="text-sm sm:text-base md:text-xl text-white/90 font-light max-w-2xl leading-relaxed">
+                <p className="text-sm sm:text-base md:text-xl text-white/90 font-light drop-shadow-md">
                   Practical resources for continuous growth.
                 </p>
               </div>
 
-              {/* Resource Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {resourceCards.map((item, i) => (
-                  <button key={i} className="bg-[#b2bad5] hover:bg-[#b2bad5]/90 transition text-[#1a1a1a] rounded-xl p-4 flex items-center gap-4 text-left shadow-md">
-                    <FaDownload className="text-2xl text-black/70 flex-shrink-0 ml-2" />
-                    <div>
-                      <div className="font-bold text-lg leading-tight">{item.title}</div>
-                      <div className="text-xs text-black/60 font-medium">{item.subtitle}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Upload History */}
-              <div>
-                <h2 className="text-2xl font-bold mb-4">Upload History</h2>
-                
-                <div className="w-full bg-[#b2bad5] text-[#1a1a1a] rounded-xl p-6 lg:p-8 text-[15px] font-medium shadow-inner">
-                  <div className="grid grid-cols-5 pb-4 mb-4 font-bold text-base border-b border-black/20">
-                    <div className="col-span-1">Resource Title</div>
-                    <div className="text-center">Module</div>
-                    <div className="text-center">Type</div>
-                    <div className="text-center">Date</div>
-                    <div className="text-center">Action</div>
-                  </div>
-                  
-                  <div className="flex flex-col gap-4">
-                    {uploadHistory.map((item, i) => (
-                      <div key={i} className="grid grid-cols-5 items-center">
-                        <div className="col-span-1 pr-4">{item.title}</div>
-                        <div className="text-center">{item.module}</div>
-                        <div className="text-center">{item.type}</div>
-                        <div className="text-center">{item.date}</div>
-                        <div className="flex justify-center">
-                          <button className="px-6 py-1.5 rounded-full border border-black/30 text-sm hover:bg-black/5 transition">
-                            Open
-                          </button>
+              {/* Accordion Container */}
+              <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
+                <div className="flex flex-col w-full gap-4 max-w-4xl mx-auto">
+                  {programs.map((prog) => {
+                    const isExpanded = expandedId === prog.id;
+                    return (
+                      <div 
+                        key={prog.id} 
+                        className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300"
+                      >
+                        <div 
+                          className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
+                          onClick={() => toggleExpand(prog.id)}
+                        >
+                          <span>{prog.name}</span>
+                          {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
                         </div>
+                        
+                        {isExpanded && (
+                          <div className="px-6 pb-6 pt-2 flex flex-col gap-4 border-t border-gray-200">
+                            
+                            {/* Resources List */}
+                            {prog.resources.length > 0 ? (
+                              <div className="flex flex-col gap-3 mt-2">
+                                {prog.resources.map(res => (
+                                  <div key={res.id} className="flex justify-between items-center bg-white px-4 py-3 rounded-lg border border-gray-200 shadow-sm">
+                                    <div className="flex items-center gap-3 w-[85%]">
+                                      <FaFilePdf className="text-red-500 text-2xl flex-shrink-0" />
+                                      <span className="font-semibold text-sm md:text-base break-words">{res.name}.pdf</span>
+                                    </div>
+                                    <button 
+                                      className="text-blue-500 p-2 hover:bg-blue-50 rounded-md transition flex-shrink-0"
+                                      title="Download Resource"
+                                    >
+                                      <FaDownload />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-gray-500 italic text-sm mt-2">No resources available.</p>
+                            )}
+
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Back Button */}
-              <div className="mt-2">
+              {/* Action Buttons */}
+              <div className="flex justify-start items-center mt-2 mb-4 md:pl-2">
                 <Link
-                  href="/client/dashboard"
-                  className="inline-flex items-center justify-center px-10 py-3 rounded-xl bg-[#1d2146] border border-white/20 text-white font-medium text-sm hover:bg-[#1d2146]/80 hover:border-white/40 shadow-md transition"
+                  href="/client/profile"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-10 sm:px-16 py-3 rounded-xl bg-[#1d2146] border border-white/30 text-white/90 font-bold text-sm hover:bg-[#0d1520] hover:border-white/50 transition shadow-md"
                 >
                   Back
                 </Link>
               </div>
+
             </div>
           </div>
         </div>

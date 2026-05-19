@@ -1,12 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import { FaBookOpen, FaPlayCircle } from "react-icons/fa";
 
-export default function TrackLearningPage() {
+export default function ClientTrackLearning() {
+  const [enrolledPrograms] = useState([
+    { id: 1, name: "360 ° Stress Management", dateEnrolled: "12 Oct 2025" },
+    { id: 2, name: "Cognitive Behavioral Therapy Basic", dateEnrolled: "24 Nov 2025" }
+  ]);
+
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       {/* Background */}
@@ -16,7 +21,7 @@ export default function TrackLearningPage() {
           alt="Background"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-[#1a2060]/70" />
       </div>
@@ -26,95 +31,52 @@ export default function TrackLearningPage() {
         <Sidebar active="Track Learning" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
           
+          <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
+
           {/* Content */}
-          <div className="flex-1 px-8 pt-2 pb-0 flex flex-col mt-[72px]">
+          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             {/* Glassmorphism Card */}
-            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[28px] p-6 sm:p-10 md:p-14 mb-8 sm:mb-16 flex flex-col gap-6 sm:gap-10">
+            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-24 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[auto] sm:min-h-[600px]">
+              
               {/* Heading */}
               <div>
-                <h1 className="text-5xl md:text-7xl font-extrabold mb-4">
-                  Your Progress
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold mb-3 drop-shadow-lg uppercase tracking-wide">
+                  Enrolled Programs
                 </h1>
-                
-                {/* Progress bar area */}
-                <div className="flex flex-col gap-3 mt-8">
-                  {/* Wavy line or gradient bar */}
-                  <div className="flex items-center w-full max-w-[300px]">
-                    {/* We simulate the wavy line with a styled div */}
-                    <svg width="240" height="20" viewBox="0 0 240 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
-                      <path d="M0 10 Q 15 0, 30 10 T 60 10 T 90 10 T 120 10 T 150 10 T 180 10 T 210 10 T 240 10" stroke="#d946ef" strokeWidth="6" strokeLinecap="round" fill="none"/>
-                    </svg>
-                    <div className="h-1.5 w-16 bg-white/40 rounded-full ml-1" />
-                  </div>
-                  <p className="text-lg md:text-xl text-white/90">Great progress!- 80% complete</p>
-                </div>
+                <p className="text-sm sm:text-base md:text-xl text-white/90 font-light drop-shadow-md">
+                  View your currently enrolled programs.
+                </p>
               </div>
 
-              {/* Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[1, 2, 3].map((v) => (
-                  <div key={v} className="bg-white rounded-xl overflow-hidden shadow-md flex flex-col text-[#1a1a1a]">
-                    <div className="flex-1 py-14 flex items-center justify-center relative">
-                      <div className="relative text-[#6b1c7c]">
-                        <FaBookOpen className="text-[70px]" />
-                        <div className="absolute -bottom-1 -right-4 bg-white rounded-full p-1">
-                          <FaPlayCircle className="text-[34px] bg-white rounded-full text-[#6b1c7c]" />
-                        </div>
-                      </div>
+              {/* Enrolled Programs Cards Area */}
+              <div className="flex flex-col gap-4 w-full mt-4">
+                {enrolledPrograms.length > 0 ? (
+                  enrolledPrograms.map((prog) => (
+                    <div 
+                      key={prog.id} 
+                      className="bg-white/90 rounded-xl p-5 sm:p-6 shadow-md border border-[#1a1040]/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition hover:bg-white"
+                    >
+                      <h3 className="text-xl sm:text-2xl font-bold text-[#1a1040] mb-2 sm:mb-0">{prog.name}</h3>
+                      <p className="text-sm sm:text-base text-gray-600 font-semibold whitespace-nowrap">Enrolled on: {prog.dateEnrolled}</p>
                     </div>
-                    <div className="bg-[#a0a8be] p-4 py-3 flex flex-col">
-                      <div className="font-bold text-[15px]">Completed <span className="text-[#6b1c7c]">Modules</span></div>
-                      <div className="text-[13px] font-medium text-black/80 mt-0.5">You have 3 ongoing modules</div>
-                    </div>
+                  ))
+                ) : (
+                  <div className="bg-white/10 border-2 border-dashed border-white/30 rounded-xl p-10 flex text-center justify-center items-center font-bold text-white/70">
+                    You are not enrolled in any programs yet.
                   </div>
-                ))}
+                )}
               </div>
 
-              {/* Modules table */}
-              <div className="w-full bg-white text-[#1a1a1a] rounded-[16px] p-6 lg:p-8 text-[15px] shadow-inner mt-4">
-                <div className="grid grid-cols-4 pb-4 mb-4 font-extrabold text-base border-b border-black/20 text-black/70">
-                  <div>Modules</div>
-                  <div>Status</div>
-                  <div>Progress</div>
-                  <div></div>
-                </div>
-                <div className="flex flex-col gap-5 text-[15px] font-semibold text-black/80">
-                  <div className="grid grid-cols-4 items-center">
-                    <div>Module 1</div>
-                    <div>Completed</div>
-                    <div>100%</div>
-                    <div className="flex justify-end">
-                      <button className="px-5 py-2 w-[180px] rounded-full border border-black/40 text-sm whitespace-nowrap hover:bg-black/5 transition">Review</button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 items-center">
-                    <div>Module 2</div>
-                    <div>In Progress</div>
-                    <div>65%</div>
-                    <div className="flex justify-end">
-                      <button className="px-5 py-2 w-[180px] rounded-full border border-black/40 text-sm whitespace-nowrap hover:bg-black/5 transition">Continue learning</button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-4 items-center">
-                    <div>Module 3</div>
-                    <div>Not Started</div>
-                    <div>0%</div>
-                    <div className="flex justify-end">
-                      <button className="px-5 py-2 w-[180px] rounded-full border border-black/40 text-sm whitespace-nowrap hover:bg-black/5 transition">Start</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Back Button */}
-              <div className="mt-4">
+              {/* Action Buttons */}
+              <div className="flex justify-start items-center mt-6 mb-4 md:pl-2">
                 <Link
-                  href="/client/dashboard"
-                  className="inline-flex items-center justify-center px-16 py-3 rounded-[12px] bg-[#1d2146] border border-white/20 text-white font-medium text-sm hover:bg-[#1d2146]/80 hover:border-white/40 shadow-md transition"
+                  href="/client/profile"
+                  className="w-full sm:w-auto inline-flex items-center justify-center px-10 sm:px-16 py-3 rounded-xl bg-[#1d2146] border border-white/30 text-white/90 font-bold text-sm hover:bg-[#0d1520] hover:border-white/50 transition shadow-md"
                 >
                   Back
                 </Link>
               </div>
+
             </div>
           </div>
         </div>

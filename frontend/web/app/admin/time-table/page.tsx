@@ -18,6 +18,10 @@ export default function AdminTimeTable() {
     setTableData(newData);
   };
 
+  const handleDelete = (index: number) => {
+    setTableData(tableData.filter((_, i) => i !== index));
+  };
+
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       {/* Background */}
@@ -81,7 +85,10 @@ export default function AdminTimeTable() {
                             <div className="pr-2"><input type="text" value={row.date} onChange={(e) => handleUpdate(idx, 'date', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
                             <div className="pr-2"><input type="text" value={row.time} onChange={(e) => handleUpdate(idx, 'time', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
                             <div className="pr-2"><input type="text" value={row.topic} onChange={(e) => handleUpdate(idx, 'topic', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
-                            <div className="pr-2"><input type="text" value={row.link} onChange={(e) => handleUpdate(idx, 'link', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
+                            <div className="pr-2 flex gap-2">
+                              <input type="text" value={row.link} onChange={(e) => handleUpdate(idx, 'link', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" />
+                              <button onClick={() => handleDelete(idx)} className="bg-red-500 hover:bg-red-600 text-white px-3 rounded shadow transition text-xs font-bold shrink-0">Delete</button>
+                            </div>
                           </>
                         ) : (
                           <>

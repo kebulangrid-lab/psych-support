@@ -6,10 +6,10 @@ import { FaSearch } from "react-icons/fa";
 
 export default function ClientDashboard() {
   const quickLinks = [
-    { label: "View Programs",              href: "#" },
-    { label: "Time table & Live class Links", href: "#" },
-    { label: "Download Resources",         href: "#" },
-    { label: "Download Resources",         href: "#" },
+    { label: "View Programs",                 href: "/client/programs" },
+    { label: "Time table & Live class Links", href: "/client/time-table" },
+    { label: "Track Learning",                href: "/client/track-learning" },
+    { label: "Download Resources",            href: "/client/resources" },
   ];
 
   return (
@@ -32,30 +32,22 @@ export default function ClientDashboard() {
         <Sidebar active="Profile" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
 
-          {/* Top Bar */}
-          <div className="w-full flex justify-end items-center px-8 pt-4 pb-0">
-            <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 w-full max-w-sm shadow-lg">
-              <FaSearch className="text-white/60 flex-shrink-0" size={14} />
-              <input
-                type="text"
-                placeholder="Filter by module or program"
-                className="bg-transparent text-white/80 placeholder-white/50 text-sm outline-none w-full"
-              />
-            </div>
+          {/* Top Bar spacing to match other pages */}
+          <div className="w-full flex justify-end items-center px-8 pt-6 pb-0 min-h-[60px]">
           </div>
 
           {/* Content */}
-          <div className="flex-1 px-8 pt-6 pb-0 flex flex-col">
+          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
 
             {/* Glassmorphism Card */}
-            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-sm rounded-[28px] p-10 md:p-14 flex flex-col gap-10">
+            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-24 sm:mb-16 flex flex-col gap-6 sm:gap-10">
 
               {/* Heading */}
               <div>
-                <h1 className="text-5xl md:text-7xl font-extrabold mb-5">
+                <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-2 sm:mb-4">
                   My Dashboard
                 </h1>
-                <p className="text-base md:text-xl text-white/85 font-light max-w-md leading-relaxed">
+                <p className="text-sm sm:text-sm sm:text-base md:text-xl text-white/90 font-light max-w-sm leading-relaxed">
                   Track your progress,<br />
                   manage your courses and stay on top of your<br />
                   learning goals..
@@ -63,12 +55,12 @@ export default function ClientDashboard() {
               </div>
 
               {/* Quick Links Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 max-w-3xl mx-auto w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-10 w-full max-w-3xl mx-auto mt-2 sm:mt-4">
                 {quickLinks.map((item, i) => (
                   <Link
                     key={i}
                     href={item.href}
-                    className="flex items-center justify-center px-6 py-4 rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-center text-sm md:text-base hover:bg-[#0d1040]/80 hover:border-white/40"
+                    className="flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 hover:border-white/50 hover:bg-[#0d1040]/80 transition text-center text-xs sm:text-sm md:text-base font-semibold"
                   >
                     {item.label}
                   </Link>
@@ -76,10 +68,10 @@ export default function ClientDashboard() {
               </div>
 
               {/* Back Button */}
-              <div className="mt-16">
+              <div className="mt-8 sm:mt-16">
                 <Link
                   href="/"
-                  className="inline-flex items-center justify-center px-10 py-3.5 rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-sm hover:bg-[#0d1040]/80 hover:border-white/40 "
+                  className="inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d1040]/60 border border-white/30 text-white/90 font-semibold text-xs sm:text-sm hover:bg-[#0d1040]/80 hover:border-white/40 transition"
                 >
                   Back
                 </Link>

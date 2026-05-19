@@ -1,10 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import { FaPhoneAlt, FaCopy, FaCheck } from "react-icons/fa";
 
-export default function SupportPage() {
+export default function ClientSupport() {
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [numbers] = useState([
+    { id: 1, value: "+234 801 234 5678" },
+    { id: 2, value: "+234 908 765 4321" },
+  ]);
+
+  const handleCopy = (id: number, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       {/* Background */}
@@ -14,7 +28,7 @@ export default function SupportPage() {
           alt="Background"
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-[#1a2060]/70" />
       </div>
@@ -25,27 +39,51 @@ export default function SupportPage() {
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
           
           {/* Top Bar spacing to match other pages */}
-          <div className="w-full flex justify-end items-center px-8 pt-6 pb-0 min-h-[60px]">
-          </div>
+          <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           {/* Content */}
-          <div className="flex-1 px-8 pt-6 pb-0 flex flex-col">
+          <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             {/* Glassmorphism Card */}
-            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[28px] p-6 sm:p-10 md:p-14 mb-8 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[50vh]">
+            <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-8 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[auto] sm:min-h-[600px]">
               
               {/* Heading */}
               <div>
-                <h1 className="text-5xl md:text-7xl font-extrabold mb-4">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold mb-3 drop-shadow-lg uppercase tracking-wide">
                   Support
                 </h1>
-                <p className="text-sm sm:text-base md:text-xl text-white/90 font-light max-w-2xl leading-relaxed">
+                <p className="text-sm sm:text-base md:text-xl text-white/90 font-light drop-shadow-md">
                   How can we help you today?
                 </p>
               </div>
 
-              {/* Empty placeholder area for future content */}
-              <div className="flex-1 flex items-center justify-center border-2 border-dashed border-white/20 rounded-xl p-10">
-                <p className="text-white/50 text-lg">Support contents coming soon...</p>
+              {/* Support Container */}
+              <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
+                <div className="flex flex-col w-full gap-4 max-w-2xl mx-auto">
+                  
+                  {/* Numbers List */}
+                  {numbers.length > 0 ? (
+                    numbers.map((num) => (
+                      <div key={num.id} className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] p-4 flex justify-between items-center transition">
+                        <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                          <div className="p-2 sm:p-3 bg-[#1a1040]/10 rounded-full flex-shrink-0">
+                            <FaPhoneAlt className="text-[#1a1040] text-sm sm:text-lg" />
+                          </div>
+                          <span className="font-bold text-base sm:text-xl truncate">{num.value}</span>
+                        </div>
+                        <button 
+                          onClick={() => handleCopy(num.id, num.value)} 
+                          className="text-[#1a1040] p-2 sm:p-3 hover:bg-[#1a1040]/10 rounded-lg transition border border-transparent flex-shrink-0" 
+                          title="Copy Number"
+                        >
+                          {copiedId === num.id ? <FaCheck className="text-green-600 text-lg" /> : <FaCopy className="text-lg" />}
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-[#1a1040]/80 italic text-center py-6 font-medium">Support numbers will be available soon.</p>
+                  )}
+
+                </div>
               </div>
 
             </div>
