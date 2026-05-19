@@ -16,7 +16,7 @@ export default function ClientDashboard() {
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
 
       {/* Background */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/client-back.jpg"
           alt="Background"
@@ -30,7 +30,7 @@ export default function ClientDashboard() {
       <div>
         {/* Sidebar */}
         <Sidebar active="Profile" />
-        <div className="flex-1 ml-[80px] z-10 flex flex-col min-h-screen">
+        <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
 
           {/* Top Bar */}
           <div className="w-full flex justify-end items-center px-8 pt-4 pb-0">
@@ -88,7 +88,9 @@ export default function ClientDashboard() {
           </div>
         </div>
       </div>
-      <Footer />
+      <div className="hidden sm:block">
+        <Footer />
+      </div>
     </main>
   );
 }

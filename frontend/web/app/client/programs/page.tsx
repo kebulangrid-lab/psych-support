@@ -12,7 +12,7 @@ export default function PricingPage() {
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
             src="/landing.jpg"
             alt="Background"
@@ -25,7 +25,7 @@ export default function PricingPage() {
 
       <div>
         <Sidebar active="Programs" />
-        <div className="flex-1 ml-[80px] z-10 flex flex-col min-h-screen">
+        <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
           
           <div className="flex-1 px-8 pt-8 pb-0 flex flex-col">
 
@@ -183,7 +183,9 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
-      <Footer />
+      <div className="hidden sm:block">
+        <Footer />
+      </div>
     </main>
   );
 }
