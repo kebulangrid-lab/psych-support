@@ -1,5 +1,9 @@
+"use client";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import Footer from "./Footer";
 
 interface AuthFormProps {
@@ -9,10 +13,60 @@ interface AuthFormProps {
 
 export default function AuthForm({ type, role }: AuthFormProps) {
   const isSignIn = type === "sign-in";
+  const router = useRouter();
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isSignIn) {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        
+        // Use backend profile checks or simply assume proper route routing.
+        if (data.user) {
+          router.push(`/${role}/profile`);
+        }
+      } else {
+        if (password !== confirmPassword) {
+          throw new Error("Passwords do not match");
+        }
+        
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+              role: role.toUpperCase(),
+            }
+          }
+        });
+        
+        if (error) throw error;
+        
+        if (data.user) {
+          router.push(`/${role}/sign-in`);
+        }
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   return (
     <main className="min-h-screen flex flex-col relative text-white overflow-hidden">
-      {/* Background with Image and Gradient Overlay */}
       <div className="fixed inset-0 -z-10">
         <Image
           src="/landing.jpg"
@@ -25,23 +79,38 @@ export default function AuthForm({ type, role }: AuthFormProps) {
       </div>
 
       <div className="flex-grow min-h-screen flex items-center justify-center p-4">
-        {/* Glassmorphism Card */}
         <div className="w-full max-w-[550px] rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 md:p-8">
           
-          <h2 className="text-2xl font-bold text-center mb-8 uppercase tracking-widest text-white/90">
+          <h2 className="text-2xl font-bold text-center mb-4 uppercase tracking-widest text-white/90">
             {role} {isSignIn ? "Login" : "Register"}
           </h2>
 
-          <form className="flex flex-col gap-4">
+          {error && <div className="mb-4 p-3 bg-red-500/20 border border-red-500 rounded text-red-100 text-center font-bold text-sm">{error}</div>}
+
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            {!isSignIn && (
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
+                required
+              />
+            )}
             <input
               type="email"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
               required
             />
             <input
               type="password"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
               required
             />
@@ -50,6 +119,8 @@ export default function AuthForm({ type, role }: AuthFormProps) {
               <input
                 type="password"
                 placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
                 required
               />
@@ -86,9 +157,10 @@ export default function AuthForm({ type, role }: AuthFormProps) {
 
               <button
                 type="submit"
-                className="px-8 py-2 rounded-2xl bg-[#34A853] hover:bg-[#2d9147] text-white font-semibold transition-all duration-300 shadow-lg whitespace-nowrap"
+                disabled={loading}
+                className="px-8 py-2 rounded-2xl bg-[#34A853] hover:bg-[#2d9147] text-white font-semibold transition-all duration-300 shadow-lg whitespace-nowrap disabled:opacity-50"
               >
-                {isSignIn ? "Log In" : "Register"}
+                {loading ? "Please wait..." : isSignIn ? "Log In" : "Register"}
               </button>
             </div>
           </form>

@@ -2,10 +2,19 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 
 export default function AdminDashboard() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/admin/sign-in");
+  };
+
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       {/* Background */}
@@ -63,14 +72,14 @@ export default function AdminDashboard() {
                 </Link>
               </div>
 
-              {/* Back Button */}
+              {/* Log Out Button */}
               <div className="mt-8 sm:mt-16">
-                <Link
-                  href="/"
-                  className="inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d3454]/60 border border-white/30 text-white/90 font-semibold text-xs sm:text-sm hover:bg-[#0d3454]/80 hover:border-white/40 "
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d3454]/60 border border-white/30 text-white/90 font-semibold text-xs sm:text-sm hover:bg-[#0d3454]/80 hover:border-white/40 transition cursor-pointer"
                 >
-                  Back
-                </Link>
+                  Log Out
+                </button>
               </div>
             </div>
           </div>

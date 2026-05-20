@@ -1,31 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import { FaSearch, FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import axios from "axios";
+import { dataCache } from "@/lib/dataCache";
 
 export default function TimeTablePage() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const programs = [
-    { 
-      id: 1, 
-      name: "360 ° Stress Management", 
-      timeTable: [
-        { id: 101, date: "17/12/2026", time: "1:30 - 12:30", topic: "Colour Therapy", link: "zoom.com" }
-      ] 
-    },
-    { 
-      id: 2, 
-      name: "Psych-Support Program 2", 
-      timeTable: [] 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async (force = false) => {
+    if (!force) {
+      const cachedProgs = dataCache.get("programs");
+      const cachedTimeTables = dataCache.get("time-tables");
+      if (cachedProgs && cachedTimeTables) {
+        const grouped = cachedProgs.map((p: any) => ({
+          id: p.id,
+          name: p.title || p.name || `Program ${p.id}`,
+          timeTable: cachedTimeTables.filter((t: any) => t.program_id === p.id)
+        }));
+        setPrograms(grouped);
+        setLoading(false);
+        return;
+      }
     }
-  ];
+    try {
+      const [progRes, timeRes] = await Promise.all([
+        axios.get("http://localhost:4000/api/programs"),
+        axios.get("http://localhost:4000/api/time-tables")
+      ]);
+      
+      const progs = progRes.data;
+      const tables = timeRes.data;
+      dataCache.set("programs", progs);
+      dataCache.set("time-tables", tables);
 
-  const toggleExpand = (id: number) => {
+      const grouped = progs.map((p: any) => ({
+        id: p.id,
+        name: p.title || p.name || `Program ${p.id}`,
+        timeTable: tables.filter((t: any) => t.program_id === p.id)
+      }));
+
+      setPrograms(grouped);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleExpand = (id: string) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
@@ -69,58 +102,66 @@ export default function TimeTablePage() {
               {/* Accordion Container */}
               <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
                 <div className="flex flex-col w-full gap-4 max-w-4xl mx-auto">
-                  {programs.map((prog) => {
-                    const isExpanded = expandedId === prog.id;
-                    return (
-                      <div 
-                        key={prog.id} 
-                        className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300 border border-gray-200"
-                      >
+                  {loading ? (
+                    <p className="text-center font-bold text-lg text-[#1a1040]">Loading timetables...</p>
+                  ) : programs.length > 0 ? (
+                    programs.map((prog) => {
+                      const isExpanded = expandedId === prog.id;
+                      return (
                         <div 
-                          className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
-                          onClick={() => toggleExpand(prog.id)}
+                          key={prog.id} 
+                          className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300 border border-gray-200"
                         >
-                          <span>{prog.name}</span>
-                          {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
-                        </div>
-                        
-                        {isExpanded && (
-                          <div className="px-4 sm:px-6 pb-6 pt-2 flex flex-col border-t border-gray-200">
-                            
-                            <div className="w-full rounded-xl overflow-x-auto mt-2">
-                              <div className="min-w-[600px]">
-                                <div className="grid grid-cols-4 px-2 py-3 border-b border-[#1a1040]/20">
-                                  <div className="font-bold text-sm sm:text-base">Date</div>
-                                  <div className="font-bold text-sm sm:text-base">Time</div>
-                                  <div className="font-bold text-sm sm:text-base">Topic</div>
-                                  <div className="font-bold text-sm sm:text-base">Live link</div>
-                                </div>
-                                <div className="flex flex-col">
-                                  {prog.timeTable.length > 0 ? (
-                                    prog.timeTable.map((row) => (
-                                      <div key={row.id} className="grid grid-cols-4 px-2 py-3 font-medium text-sm border-b border-[#1a1040]/10 last:border-0 items-center">
-                                        <div className="opacity-80 pr-2 truncate">{row.date}</div>
-                                        <div className="opacity-80 pr-2 truncate">{row.time}</div>
-                                        <div className="opacity-80 pr-2 truncate">{row.topic}</div>
-                                        <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
-                                          <a href={row.link.startsWith('http') ? row.link : `https://${row.link}`} target="_blank" rel="noreferrer">
-                                            {row.link}
-                                          </a>
+                          <div 
+                            className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
+                            onClick={() => toggleExpand(prog.id)}
+                          >
+                            <span>{prog.name}</span>
+                            {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
+                          </div>
+                          
+                          {isExpanded && (
+                            <div className="px-4 sm:px-6 pb-6 pt-2 flex flex-col border-t border-gray-200">
+                              
+                              <div className="w-full rounded-xl overflow-x-auto mt-2">
+                                <div className="min-w-[600px]">
+                                  <div className="grid grid-cols-4 px-2 py-3 border-b border-[#1a1040]/20">
+                                    <div className="font-bold text-sm sm:text-base">Date</div>
+                                    <div className="font-bold text-sm sm:text-base">Time</div>
+                                    <div className="font-bold text-sm sm:text-base">Topic</div>
+                                    <div className="font-bold text-sm sm:text-base">Live link</div>
+                                  </div>
+                                  <div className="flex flex-col">
+                                    {prog.timeTable && prog.timeTable.length > 0 ? (
+                                      prog.timeTable.map((row: any) => (
+                                        <div key={row.id} className="grid grid-cols-4 px-2 py-3 font-medium text-sm border-b border-[#1a1040]/10 last:border-0 items-center">
+                                          <div className="opacity-80 pr-2 truncate">{row.date}</div>
+                                          <div className="opacity-80 pr-2 truncate">{row.time}</div>
+                                          <div className="opacity-80 pr-2 break-words whitespace-normal">{row.topic}</div>
+                                          <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition break-all whitespace-normal pr-2">
+                                            {row.link && (
+                                              <a href={row.link.startsWith('http') ? row.link : `https://${row.link}`} target="_blank" rel="noreferrer">
+                                                {row.link}
+                                              </a>
+                                            )}
+                                          </div>
                                         </div>
-                                      </div>
-                                    ))
-                                  ) : (
-                                    <p className="text-gray-500 italic text-sm py-4">No schedule available for this program.</p>
-                                  )}
+                                      ))
+                                    ) : (
+                                      <p className="text-gray-500 italic text-sm py-4">No schedule available for this program.</p>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-center italic mt-4 font-bold text-lg text-[#1a1040]">No programs found.</p>
+                  )}
                 </div>
               </div>
 
