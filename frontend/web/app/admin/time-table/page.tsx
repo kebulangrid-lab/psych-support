@@ -5,21 +5,68 @@ import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 export default function AdminTimeTable() {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [tableData, setTableData] = useState([
-    { id: 1, date: "17/12/2026", time: "1:30 - 12:30", topic: "Colour Therapy", link: "zoom.com" },
+
+  // Grouped by program
+  const [programs, setPrograms] = useState([
+    { 
+      id: 1, 
+      name: "360 ° Stress Management", 
+      timeTable: [
+        { id: 101, date: "17/12/2026", time: "1:30 - 12:30", topic: "Colour Therapy", link: "zoom.com" }
+      ] 
+    },
+    { 
+      id: 2, 
+      name: "Psych-Support Program 2", 
+      timeTable: [] 
+    }
   ]);
 
-  const handleUpdate = (index: number, field: string, value: string) => {
-    const newData = [...tableData];
-    newData[index] = { ...newData[index], [field as keyof typeof newData[0]]: value };
-    setTableData(newData);
+  const toggleExpand = (id: number) => {
+    setExpandedId(prev => (prev === id ? null : id));
   };
 
-  const handleDelete = (index: number) => {
-    setTableData(tableData.filter((_, i) => i !== index));
+  const handleUpdate = (progId: number, entryId: number, field: string, value: string) => {
+    setPrograms(programs.map(p => {
+      if (p.id === progId) {
+        return {
+          ...p,
+          timeTable: p.timeTable.map(entry => 
+            entry.id === entryId ? { ...entry, [field]: value } : entry
+          )
+        };
+      }
+      return p;
+    }));
+  };
+
+  const handleDelete = (progId: number, entryId: number) => {
+    setPrograms(programs.map(p => {
+      if (p.id === progId) {
+        return { ...p, timeTable: p.timeTable.filter(e => e.id !== entryId) };
+      }
+      return p;
+    }));
+  };
+
+  const handleAddNew = (progId: number) => {
+    setPrograms(programs.map(p => {
+      if (p.id === progId) {
+        return {
+          ...p,
+          timeTable: [
+            ...p.timeTable, 
+            { id: Date.now(), date: "", time: "", topic: "", link: "" }
+          ]
+        };
+      }
+      return p;
+    }));
   };
 
   return (
@@ -68,41 +115,82 @@ export default function AdminTimeTable() {
                 )}
               </div>
 
-              {/* Table Container */}
-              <div className="w-full bg-[#8c97a7] rounded-xl overflow-x-auto mt-4 shadow-lg text-[#1a1040]">
-                <div className="min-w-[600px]">
-                  <div className="grid grid-cols-4 px-4 sm:px-8 py-4 sm:py-5 border-b border-[#1a1040]/10">
-                    <div className="font-bold text-base sm:text-lg">Date</div>
-                    <div className="font-bold text-base sm:text-lg">Time</div>
-                    <div className="font-bold text-base sm:text-lg">Topic</div>
-                    <div className="font-bold text-base sm:text-lg">Live link</div>
-                  </div>
-                  <div className="flex flex-col">
-                    {tableData.map((row, idx) => (
-                      <div key={row.id} className="grid grid-cols-4 px-4 sm:px-8 py-4 font-medium text-sm sm:text-base border-b border-[#1a1040]/5 last:border-0 border-dashed items-center">
-                        {isEditing ? (
-                          <>
-                            <div className="pr-2"><input type="text" value={row.date} onChange={(e) => handleUpdate(idx, 'date', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
-                            <div className="pr-2"><input type="text" value={row.time} onChange={(e) => handleUpdate(idx, 'time', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
-                            <div className="pr-2"><input type="text" value={row.topic} onChange={(e) => handleUpdate(idx, 'topic', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" /></div>
-                            <div className="pr-2 flex gap-2">
-                              <input type="text" value={row.link} onChange={(e) => handleUpdate(idx, 'link', e.target.value)} className="w-full bg-white/70 border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" />
-                              <button onClick={() => handleDelete(idx)} className="bg-red-500 hover:bg-red-600 text-white px-3 rounded shadow transition text-xs font-bold shrink-0">Delete</button>
+              {/* Accordion Container */}
+              <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
+                <div className="flex flex-col w-full gap-4 max-w-4xl mx-auto">
+                  {programs.map((prog) => {
+                    const isExpanded = expandedId === prog.id;
+                    return (
+                      <div 
+                        key={prog.id} 
+                        className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300 border border-gray-200"
+                      >
+                        <div 
+                          className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
+                          onClick={() => toggleExpand(prog.id)}
+                        >
+                          <span>{prog.name}</span>
+                          {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
+                        </div>
+                        
+                        {isExpanded && (
+                          <div className="px-4 sm:px-6 pb-6 pt-2 flex flex-col border-t border-gray-200">
+                            
+                            <div className="w-full rounded-xl overflow-x-auto mt-2">
+                              <div className="min-w-[600px]">
+                                <div className="grid grid-cols-4 px-2 py-3 border-b border-[#1a1040]/20">
+                                  <div className="font-bold text-sm sm:text-base">Date</div>
+                                  <div className="font-bold text-sm sm:text-base">Time</div>
+                                  <div className="font-bold text-sm sm:text-base">Topic</div>
+                                  <div className="font-bold text-sm sm:text-base">Live link</div>
+                                </div>
+                                <div className="flex flex-col">
+                                  {prog.timeTable.length > 0 ? (
+                                    prog.timeTable.map((row) => (
+                                      <div key={row.id} className="grid grid-cols-4 px-2 py-3 font-medium text-sm border-b border-[#1a1040]/10 last:border-0 items-center">
+                                        {isEditing ? (
+                                          <>
+                                            <div className="pr-2"><input type="text" value={row.date} onChange={(e) => handleUpdate(prog.id, row.id, 'date', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Date" /></div>
+                                            <div className="pr-2"><input type="text" value={row.time} onChange={(e) => handleUpdate(prog.id, row.id, 'time', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Time" /></div>
+                                            <div className="pr-2"><input type="text" value={row.topic} onChange={(e) => handleUpdate(prog.id, row.id, 'topic', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Topic" /></div>
+                                            <div className="pr-2 flex gap-2">
+                                              <input type="text" value={row.link} onChange={(e) => handleUpdate(prog.id, row.id, 'link', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Link" />
+                                              <button onClick={() => handleDelete(prog.id, row.id)} className="bg-red-500 hover:bg-red-600 text-white px-2 rounded shadow transition text-xs font-bold shrink-0">Del</button>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <div className="opacity-80 pr-2 truncate">{row.date}</div>
+                                            <div className="opacity-80 pr-2 truncate">{row.time}</div>
+                                            <div className="opacity-80 pr-2 truncate">{row.topic}</div>
+                                            <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
+                                              {row.link}
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-gray-500 italic text-sm py-4">No schedule created for this program.</p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="opacity-80 pr-2 truncate">{row.date}</div>
-                            <div className="opacity-80 pr-2 truncate">{row.time}</div>
-                            <div className="opacity-80 pr-2 truncate">{row.topic}</div>
-                            <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
-                              {row.link}
-                            </div>
-                          </>
+
+                            {isEditing && (
+                              <button 
+                                onClick={() => handleAddNew(prog.id)}
+                                className="mt-4 bg-[#1a1040] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#1a1040]/80 transition shadow-sm w-fit text-sm"
+                              >
+                                + Add New Entry
+                              </button>
+                            )}
+
+                          </div>
                         )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
 

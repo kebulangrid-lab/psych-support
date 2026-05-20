@@ -1,20 +1,33 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaAngleDown, FaAngleUp } from "react-icons/fa";
 
 export default function TimeTablePage() {
-  const tableData = [
-    {
-      date: "17/12/2026",
-      time: "1:30 - 12:30",
-      topic: "Colour Therapy",
-      link: "zoom.com"
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const programs = [
+    { 
+      id: 1, 
+      name: "360 ° Stress Management", 
+      timeTable: [
+        { id: 101, date: "17/12/2026", time: "1:30 - 12:30", topic: "Colour Therapy", link: "zoom.com" }
+      ] 
+    },
+    { 
+      id: 2, 
+      name: "Psych-Support Program 2", 
+      timeTable: [] 
     }
   ];
+
+  const toggleExpand = (id: number) => {
+    setExpandedId(prev => (prev === id ? null : id));
+  };
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
@@ -53,29 +66,61 @@ export default function TimeTablePage() {
                 </p>
               </div>
 
-              {/* Table Area */}
-              <div className="w-full bg-[#8c97a7] rounded-xl overflow-x-auto mt-4 shadow-lg text-[#1a1040]">
-                <div className="min-w-[600px]">
-                  <div className="grid grid-cols-4 px-4 sm:px-8 py-4 sm:py-5 border-b border-[#1a1040]/10">
-                    <div className="font-bold text-base sm:text-lg">Date</div>
-                    <div className="font-bold text-base sm:text-lg">Time</div>
-                    <div className="font-bold text-base sm:text-lg">Topic</div>
-                    <div className="font-bold text-base sm:text-lg">Live link</div>
-                  </div>
-                  <div className="flex flex-col">
-                    {tableData.map((item, i) => (
-                      <div key={i} className="grid grid-cols-4 px-4 sm:px-8 py-4 font-medium text-sm sm:text-base border-b border-[#1a1040]/5 last:border-0 border-dashed items-center">
-                        <div className="opacity-80 pr-2 truncate">{item.date}</div>
-                        <div className="opacity-80 pr-2 truncate">{item.time}</div>
-                        <div className="opacity-80 pr-2 truncate">{item.topic}</div>
-                        <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
-                          <a href={`https://${item.link}`} target="_blank" rel="noreferrer">
-                            {item.link}
-                          </a>
+              {/* Accordion Container */}
+              <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
+                <div className="flex flex-col w-full gap-4 max-w-4xl mx-auto">
+                  {programs.map((prog) => {
+                    const isExpanded = expandedId === prog.id;
+                    return (
+                      <div 
+                        key={prog.id} 
+                        className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300 border border-gray-200"
+                      >
+                        <div 
+                          className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
+                          onClick={() => toggleExpand(prog.id)}
+                        >
+                          <span>{prog.name}</span>
+                          {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
                         </div>
+                        
+                        {isExpanded && (
+                          <div className="px-4 sm:px-6 pb-6 pt-2 flex flex-col border-t border-gray-200">
+                            
+                            <div className="w-full rounded-xl overflow-x-auto mt-2">
+                              <div className="min-w-[600px]">
+                                <div className="grid grid-cols-4 px-2 py-3 border-b border-[#1a1040]/20">
+                                  <div className="font-bold text-sm sm:text-base">Date</div>
+                                  <div className="font-bold text-sm sm:text-base">Time</div>
+                                  <div className="font-bold text-sm sm:text-base">Topic</div>
+                                  <div className="font-bold text-sm sm:text-base">Live link</div>
+                                </div>
+                                <div className="flex flex-col">
+                                  {prog.timeTable.length > 0 ? (
+                                    prog.timeTable.map((row) => (
+                                      <div key={row.id} className="grid grid-cols-4 px-2 py-3 font-medium text-sm border-b border-[#1a1040]/10 last:border-0 items-center">
+                                        <div className="opacity-80 pr-2 truncate">{row.date}</div>
+                                        <div className="opacity-80 pr-2 truncate">{row.time}</div>
+                                        <div className="opacity-80 pr-2 truncate">{row.topic}</div>
+                                        <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
+                                          <a href={row.link.startsWith('http') ? row.link : `https://${row.link}`} target="_blank" rel="noreferrer">
+                                            {row.link}
+                                          </a>
+                                        </div>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <p className="text-gray-500 italic text-sm py-4">No schedule available for this program.</p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               </div>
 
