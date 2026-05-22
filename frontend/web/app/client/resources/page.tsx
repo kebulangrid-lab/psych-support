@@ -41,9 +41,9 @@ export default function ClientResources() {
     if (!user) return;
     try {
       const [progRes, enrollRes, resRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/programs"),
-        axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`),
-        axios.get(`http://localhost:4000/api/resources?client_id=${user.id}`)
+        axios.get("https://psych-support-1.onrender.com/api/programs"),
+        axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`),
+        axios.get(`https://psych-support-1.onrender.com/api/resources?client_id=${user.id}`)
       ]);
       
       const progs = progRes.data || [];

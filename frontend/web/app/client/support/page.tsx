@@ -38,8 +38,8 @@ export default function ClientSupport() {
     const fetchSupportAndEnrollments = async () => {
       try {
         const [supportRes, enrollmentsRes] = await Promise.all([
-          axios.get("http://localhost:4000/api/support"),
-          axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`)
+          axios.get("https://psych-support-1.onrender.com/api/support"),
+          axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`)
         ]);
 
         const mapped = (supportRes.data || []).map((num: any) => ({

@@ -26,8 +26,8 @@ export default function AdminTimeTable() {
   const fetchData = async () => {
     try {
       const [progRes, timeRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/programs"),
-        axios.get("http://localhost:4000/api/time-tables")
+        axios.get("https://psych-support-1.onrender.com/api/programs"),
+        axios.get("https://psych-support-1.onrender.com/api/time-tables")
       ]);
 
       const progs = progRes.data;
@@ -85,7 +85,7 @@ export default function AdminTimeTable() {
     if (!entryId.startsWith('new_')) {
       setDeletingId(entryId);
       try {
-        await axios.delete(`http://localhost:4000/api/time-tables/${entryId}`);
+        await axios.delete(`https://psych-support-1.onrender.com/api/time-tables/${entryId}`);
         addToast("Timetable entry deleted successfully.", "success");
       } catch (err) {
         console.error(err);
@@ -118,9 +118,9 @@ export default function AdminTimeTable() {
             link: t.link
           };
           if (t._isNew) {
-            await axios.post("http://localhost:4000/api/time-tables", payload);
+            await axios.post("https://psych-support-1.onrender.com/api/time-tables", payload);
           } else if (t._isDirty) {
-            await axios.patch(`http://localhost:4000/api/time-tables/${t.id}`, payload);
+            await axios.patch(`https://psych-support-1.onrender.com/api/time-tables/${t.id}`, payload);
           }
         }
       }

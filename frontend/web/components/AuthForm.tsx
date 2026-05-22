@@ -37,7 +37,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
         if (data.user) {
           if (role === "client") {
             try {
-              const res = await axios.get(`http://localhost:4000/api/enrollments?client_id=${data.user.id}`);
+              const res = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${data.user.id}`);
               const enrollments = res.data || [];
               if (enrollments.length > 0) {
                 router.push("/client/profile");
@@ -73,7 +73,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
         if (data.user) {
           if (role === "client") {
             try {
-              const res = await axios.get(`http://localhost:4000/api/enrollments?client_id=${data.user.id}`);
+              const res = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${data.user.id}`);
               const enrollments = res.data || [];
               if (enrollments.length > 0) {
                 router.push("/client/profile");

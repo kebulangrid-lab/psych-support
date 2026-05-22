@@ -30,7 +30,7 @@ export default function AdminPrograms() {
       }
     }
     try {
-      const res = await axios.get("http://localhost:4000/api/programs");
+      const res = await axios.get("https://psych-support-1.onrender.com/api/programs");
       setPrograms(res.data);
       dataCache.set("programs", res.data);
     } catch (err) {
@@ -48,7 +48,7 @@ export default function AdminPrograms() {
   const handleAddNewProgram = async () => {
     setIsAdding(true);
     try {
-      const res = await axios.post("http://localhost:4000/api/programs", {
+      const res = await axios.post("https://psych-support-1.onrender.com/api/programs", {
         title: "New Program",
         description: "",
         price: 0
@@ -69,7 +69,7 @@ export default function AdminPrograms() {
   const handleUpdate = async (id: string, updates: any) => {
     setSavingId(id);
     try {
-      const res = await axios.patch(`http://localhost:4000/api/programs/${id}`, updates);
+      const res = await axios.patch(`https://psych-support-1.onrender.com/api/programs/${id}`, updates);
       setPrograms(programs.map(p => p.id === id ? res.data : p));
       dataCache.clear();
       setEditingId(null);
@@ -86,7 +86,7 @@ export default function AdminPrograms() {
     if (!confirm("Are you sure you want to delete this program? This will delete all related schedule, resources and enrollments!")) return;
     setDeletingId(id);
     try {
-      await axios.delete(`http://localhost:4000/api/programs/${id}`);
+      await axios.delete(`https://psych-support-1.onrender.com/api/programs/${id}`);
       setPrograms(programs.filter(p => p.id !== id));
       setExpandedId(null);
       dataCache.clear();

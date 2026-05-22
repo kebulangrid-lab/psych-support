@@ -27,7 +27,7 @@ export default function PaymentPage() {
 
     const fetchProgram = async () => {
       try {
-        const res = await axios.get(`http://localhost:4000/api/programs/${programId}`);
+        const res = await axios.get(`https://psych-support-1.onrender.com/api/programs/${programId}`);
         setProgram(res.data);
       } catch (err) {
         console.error("Error fetching program details:", err);
@@ -43,7 +43,7 @@ export default function PaymentPage() {
     if (!user || !program || paying) return;
     setPaying(true);
     try {
-      await axios.post("http://localhost:4000/api/enrollments", {
+      await axios.post("https://psych-support-1.onrender.com/api/enrollments", {
         client_id: user.id,
         program_id: program.id,
         amount_paid: program.price || 0,

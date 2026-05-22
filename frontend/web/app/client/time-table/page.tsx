@@ -41,9 +41,9 @@ export default function TimeTablePage() {
     if (!user) return;
     try {
       const [progRes, enrollRes, timeRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/programs"),
-        axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`),
-        axios.get(`http://localhost:4000/api/time-tables?client_id=${user.id}`)
+        axios.get("https://psych-support-1.onrender.com/api/programs"),
+        axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`),
+        axios.get(`https://psych-support-1.onrender.com/api/time-tables?client_id=${user.id}`)
       ]);
       
       const progs = progRes.data || [];

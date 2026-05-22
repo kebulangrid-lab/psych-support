@@ -44,8 +44,8 @@ export default function AdminResources() {
     }
     try {
       const [progRes, resRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/programs"),
-        axios.get("http://localhost:4000/api/resources")
+        axios.get("https://psych-support-1.onrender.com/api/programs"),
+        axios.get("https://psych-support-1.onrender.com/api/resources")
       ]);
 
       const progs = progRes.data;
@@ -77,7 +77,7 @@ export default function AdminResources() {
   const handleDeleteResource = async (progId: string, resId: string) => {
     setDeletingId(resId);
     try {
-      await axios.delete(`http://localhost:4000/api/resources/${resId}`);
+      await axios.delete(`https://psych-support-1.onrender.com/api/resources/${resId}`);
       dataCache.clear();
       setPrograms(programs.map(p => {
         if (p.id === progId) {
@@ -113,7 +113,7 @@ export default function AdminResources() {
       formData.append('title', newResourceName);
 
       try {
-        const res = await axios.post("http://localhost:4000/api/resources", formData, {
+        const res = await axios.post("https://psych-support-1.onrender.com/api/resources", formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
 

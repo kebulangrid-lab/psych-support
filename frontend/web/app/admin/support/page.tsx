@@ -23,7 +23,7 @@ export default function AdminSupport() {
 
   const fetchNumbers = async () => {
     try {
-      const res = await axios.get("http://localhost:4000/api/support");
+      const res = await axios.get("https://psych-support-1.onrender.com/api/support");
       setNumbers(res.data);
     } catch (err) {
       console.error(err);
@@ -36,7 +36,7 @@ export default function AdminSupport() {
   const handleDelete = async (id: string) => {
     setDeletingId(id);
     try {
-      await axios.delete(`http://localhost:4000/api/support/${id}`);
+      await axios.delete(`https://psych-support-1.onrender.com/api/support/${id}`);
       setNumbers(numbers.filter(n => n.id !== id));
       addToast("Support number deleted successfully.", "success");
     } catch (err) {
@@ -51,7 +51,7 @@ export default function AdminSupport() {
     if (newNumber.trim()) {
       setIsSavingNewNumber(true);
       try {
-        const res = await axios.post("http://localhost:4000/api/support", { phone_number: newNumber.trim() });
+        const res = await axios.post("https://psych-support-1.onrender.com/api/support", { phone_number: newNumber.trim() });
         setNumbers([res.data, ...numbers]);
         setNewNumber("");
         setIsAdding(false);

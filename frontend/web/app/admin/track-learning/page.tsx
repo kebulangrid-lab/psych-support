@@ -49,8 +49,8 @@ export default function AdminTrackLearning() {
     }
     try {
       const [progRes, enrRes] = await Promise.all([
-        axios.get("http://localhost:4000/api/programs"),
-        axios.get("http://localhost:4000/api/enrollments")
+        axios.get("https://psych-support-1.onrender.com/api/programs"),
+        axios.get("https://psych-support-1.onrender.com/api/enrollments")
       ]);
       
       const progs = progRes.data;

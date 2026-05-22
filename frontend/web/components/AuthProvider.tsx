@@ -55,7 +55,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     }
 
     try {
-      const res = await axios.get(`http://localhost:4000/api/enrollments?client_id=${userId}`);
+      const res = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${userId}`);
       const enrolled = (res.data || []).length > 0;
       setIsEnrolled(enrolled);
       if (typeof window !== "undefined") {
