@@ -5,14 +5,18 @@ import { SupabaseService } from '../supabase/supabase.service';
 export class EnrollmentsService {
   constructor(private readonly supabase: SupabaseService) {}
 
-  async findAll() {
-    const { data, error } = await this.supabase.client.from('enrollments').select('*');
+  async findAll(clientId?: string) {
+    let query = this.supabase.client.from('enrollments').select('*, profiles(full_name)');
+    if (clientId) {
+      query = query.eq('client_id', clientId);
+    }
+    const { data, error } = await query;
     if (error) throw new InternalServerErrorException(error.message);
     return data;
   }
 
   async findOne(id: string) {
-    const { data, error } = await this.supabase.client.from('enrollments').select('*').eq('id', id).single();
+    const { data, error } = await this.supabase.client.from('enrollments').select('*, profiles(full_name)').eq('id', id).single();
     if (error) throw new NotFoundException('Record not found');
     return data;
   }

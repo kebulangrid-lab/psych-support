@@ -1,19 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaCreditCard, FaUniversity, FaChevronRight, FaLock, FaShieldAlt, FaHeadset } from "react-icons/fa";
+import { useAuth } from "@/components/AuthProvider";
+import axios from "axios";
 
 export default function PaymentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, refreshEnrollmentStatus } = useAuth();
+  const programId = searchParams.get("programId");
 
-  const handlePaymentComplete = () => {
-    // Navigate back to programs and they would see "purchased" (simulated via local state or global context in real app)
-    router.push("/client/programs");
+  const [program, setProgram] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+
+  useEffect(() => {
+    if (!programId) {
+      router.push("/client/programs");
+      return;
+    }
+
+    const fetchProgram = async () => {
+      try {
+        const res = await axios.get(`http://localhost:4000/api/programs/${programId}`);
+        setProgram(res.data);
+      } catch (err) {
+        console.error("Error fetching program details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProgram();
+  }, [programId, router]);
+
+  const handlePaymentComplete = async () => {
+    if (!user || !program || paying) return;
+    setPaying(true);
+    try {
+      await axios.post("http://localhost:4000/api/enrollments", {
+        client_id: user.id,
+        program_id: program.id,
+        amount_paid: program.price || 0,
+        payment_status: "completed",
+        payment_reference: `PAY-${Math.random().toString(36).substring(2, 11).toUpperCase()}`
+      });
+      
+      // Refresh the global enrollment cache
+      await refreshEnrollmentStatus();
+      
+      router.push("/client/profile");
+    } catch (err) {
+      console.error("Error completing payment:", err);
+      alert("Failed to process payment. Please try again.");
+    } finally {
+      setPaying(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Loading payment details...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!program) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <p className="font-bold text-xl">Program not found.</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
@@ -48,6 +115,17 @@ export default function PaymentPage() {
 
               <div className="w-full bg-white text-black rounded-[12px] p-5 sm:p-6 md:p-8 flex flex-col shadow-2xl mt-2 max-w-3xl mx-auto">
                 
+                {/* Program Summary Card */}
+                <div className="w-full bg-purple-950/5 border border-purple-950/10 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                  <div>
+                    <h3 className="font-extrabold text-lg sm:text-xl text-[#1a1040]">{program.title}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 font-medium mt-1">Specialised Learning Program Enrollment</p>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <span className="text-2xl sm:text-3xl font-extrabold text-purple-950">₦{program.price !== undefined ? Number(program.price).toFixed(2) : "0.00"}</span>
+                  </div>
+                </div>
+
                 <h2 className="text-xl md:text-2xl font-bold mb-1">Select Payment Method</h2>
                 <p className="text-gray-500 mb-6 font-medium text-xs sm:text-sm">Choose how you would like to complete your payment.</p>
 
@@ -55,14 +133,15 @@ export default function PaymentPage() {
                   {/* Card Payment Option */}
                   <button 
                     onClick={handlePaymentComplete}
-                    className="border-2 border-blue-500 rounded-xl p-4 sm:p-5 flex items-center justify-between hover:bg-blue-50/50 transition group"
+                    disabled={paying}
+                    className={`border-2 border-blue-500 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-50/50"}`}
                   >
                     <div className="flex items-center gap-4 sm:gap-6">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-500 text-2xl sm:text-3xl">
-                        <FaCreditCard />
+                        {paying ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> : <FaCreditCard />}
                       </div>
                       <div className="text-left">
-                        <h3 className="font-bold text-base sm:text-lg mb-1">Card Payment</h3>
+                        <h3 className="font-bold text-base sm:text-lg mb-1">{paying ? "Processing Payment..." : "Card Payment"}</h3>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">Pay securely using your debit or credit card.</p>
                         <div className="flex gap-2 mt-2">
                            {/* Placeholder for card logos like VISA, Mastercard, etc. */}
@@ -77,14 +156,15 @@ export default function PaymentPage() {
                   {/* Bank Transfer Option */}
                   <button 
                     onClick={handlePaymentComplete}
-                    className="border-2 border-gray-200 rounded-xl p-4 sm:p-5 flex items-center justify-between hover:border-green-500 hover:bg-green-50/50 transition group"
+                    disabled={paying}
+                    className={`border-2 border-gray-200 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:border-green-500 hover:bg-green-50/50"}`}
                   >
                     <div className="flex items-center gap-4 sm:gap-6">
                       <div className="w-12 h-12 sm:w-14 sm:h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-500 text-2xl sm:text-3xl">
-                        <FaUniversity />
+                        {paying ? <div className="w-6 h-6 border-2 border-green-500 border-t-transparent rounded-full animate-spin" /> : <FaUniversity />}
                       </div>
                       <div className="text-left flex-1 min-w-[200px]">
-                        <h3 className="font-bold text-base sm:text-lg mb-1">Bank Transfer</h3>
+                        <h3 className="font-bold text-base sm:text-lg mb-1">{paying ? "Processing Transfer..." : "Bank Transfer"}</h3>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">Pay directly from your bank account.</p>
                       </div>
                     </div>

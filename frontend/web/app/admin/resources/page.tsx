@@ -8,12 +8,16 @@ import Footer from "@/components/Footer";
 import { FaAngleDown, FaAngleUp, FaFilePdf, FaTrash, FaCloudUploadAlt } from "react-icons/fa";
 import axios from "axios";
 import { dataCache } from "@/lib/dataCache";
+import { useToast } from "@/components/Toast";
 
 export default function AdminResources() {
+  const { addToast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [newResourceName, setNewResourceName] = useState("");
-  
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [programs, setPrograms] = useState<any[]>([]);
@@ -43,7 +47,7 @@ export default function AdminResources() {
         axios.get("http://localhost:4000/api/programs"),
         axios.get("http://localhost:4000/api/resources")
       ]);
-      
+
       const progs = progRes.data;
       const allResources = resRes.data;
       dataCache.set("programs", progs);
@@ -58,6 +62,7 @@ export default function AdminResources() {
       setPrograms(grouped);
     } catch (err) {
       console.error(err);
+      addToast("Failed to fetch resources.", "error");
     } finally {
       setLoading(false);
     }
@@ -70,6 +75,7 @@ export default function AdminResources() {
   };
 
   const handleDeleteResource = async (progId: string, resId: string) => {
+    setDeletingId(resId);
     try {
       await axios.delete(`http://localhost:4000/api/resources/${resId}`);
       dataCache.clear();
@@ -79,15 +85,19 @@ export default function AdminResources() {
         }
         return p;
       }));
+      addToast("Resource deleted successfully.", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to delete resource.", "error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const triggerFileSelect = () => {
     if (!newResourceName.trim()) {
-       alert("Please enter a resource name first.");
-       return;
+      addToast("Please enter a resource name first.", "error");
+      return;
     }
     fileInputRef.current?.click();
   };
@@ -95,17 +105,18 @@ export default function AdminResources() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, progId: string) => {
     const file = e.target.files?.[0];
     if (file && newResourceName.trim()) {
+      setIsUploading(true);
       // Create FormData properly
       const formData = new FormData();
       formData.append('file', file);
       formData.append('program_id', progId);
       formData.append('title', newResourceName);
-      
+
       try {
         const res = await axios.post("http://localhost:4000/api/resources", formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-        
+
         dataCache.clear();
         setPrograms(programs.map(p => {
           if (p.id === progId) {
@@ -113,12 +124,15 @@ export default function AdminResources() {
           }
           return p;
         }));
+        addToast("Upload successful!", "success");
       } catch (err) {
         console.error(err);
-        alert("Upload failed. Backend Cloudinary setup may be incomplete.");
+        addToast("Upload failed. Backend Cloudinary setup may be incomplete.", "error");
+      } finally {
+        setIsUploading(false);
+        setUploadingFor(null);
+        setNewResourceName("");
       }
-      setUploadingFor(null);
-      setNewResourceName("");
     }
     if (e.target) e.target.value = '';
   };
@@ -137,7 +151,7 @@ export default function AdminResources() {
 
           <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-24 sm:mb-16 flex flex-col gap-6 sm:gap-10 min-h-[auto] sm:min-h-[600px]">
-              
+
               <div>
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-extrabold mb-3 drop-shadow-lg uppercase tracking-wide">
                   Learning Resources
@@ -160,10 +174,10 @@ export default function AdminResources() {
                             <span>{prog.name}</span>
                             {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
                           </div>
-                          
+
                           {isExpanded && (
                             <div className="px-6 pb-6 pt-2 flex flex-col gap-4 border-t border-gray-200">
-                              
+
                               {prog.resources && prog.resources.length > 0 ? (
                                 <div className="flex flex-col gap-3 mt-2">
                                   {prog.resources.map((res: any) => (
@@ -174,8 +188,12 @@ export default function AdminResources() {
                                           {res.title || res.name || 'Resource'}.pdf
                                         </span>
                                       </div>
-                                      <button onClick={() => handleDeleteResource(prog.id, res.id)} className="text-red-500 p-2 hover:bg-red-50 rounded-md transition flex-shrink-0" title="Delete Resource">
-                                        <FaTrash />
+                                      <button onClick={() => handleDeleteResource(prog.id, res.id)} disabled={deletingId === res.id} className="text-red-500 p-2 hover:bg-red-50 rounded-md transition flex-shrink-0 disabled:opacity-50 flex items-center justify-center" title="Delete Resource">
+                                        {deletingId === res.id ? (
+                                          <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                          <FaTrash />
+                                        )}
                                       </button>
                                     </div>
                                   ))}
@@ -187,13 +205,22 @@ export default function AdminResources() {
                               {uploadingFor === prog.id ? (
                                 <div className="mt-4 p-4 md:p-6 border-2 border-dashed border-[#1a1040]/40 rounded-xl bg-gray-100/50 flex flex-col gap-4 items-start">
                                   <h4 className="font-bold text-[#1a1040]">Upload New PDF</h4>
-                                  <input type="text" placeholder="Enter resource name..." value={newResourceName} onChange={(e) => setNewResourceName(e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded-lg px-4 py-3 outline-none focus:border-[#1a1040]/50 transition font-medium text-sm md:text-base shadow-inner" />
+                                  <input type="text" disabled={isUploading} placeholder="Enter resource name..." value={newResourceName} onChange={(e) => setNewResourceName(e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded-lg px-4 py-3 outline-none focus:border-[#1a1040]/50 transition font-medium text-sm md:text-base shadow-inner disabled:opacity-50" />
                                   <input type="file" accept=".pdf" ref={fileInputRef} onChange={(e) => handleFileChange(e, prog.id)} className="hidden" />
                                   <div className="flex flex-col sm:flex-row gap-3 w-full mt-2">
-                                    <button onClick={triggerFileSelect} className="flex-1 bg-[#1a1040] text-white py-3 rounded-lg font-bold hover:bg-[#1a1040]/80 transition flex items-center justify-center gap-2 shadow-md">
-                                      <FaCloudUploadAlt className="text-xl" /> Select PDF & Upload
+                                    <button onClick={triggerFileSelect} disabled={isUploading} className="flex-1 bg-[#1a1040] text-white py-3 rounded-lg font-bold hover:bg-[#1a1040]/80 transition flex items-center justify-center gap-2 shadow-md disabled:opacity-50">
+                                      {isUploading ? (
+                                        <>
+                                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                          Uploading...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <FaCloudUploadAlt className="text-xl" /> Select PDF & Upload
+                                        </>
+                                      )}
                                     </button>
-                                    <button onClick={() => setUploadingFor(null)} className="px-6 py-3 sm:py-0 border border-[#1a1040]/30 rounded-lg text-[#1a1040] font-bold hover:bg-gray-200 transition">
+                                    <button onClick={() => setUploadingFor(null)} disabled={isUploading} className="px-6 py-3 sm:py-0 border border-[#1a1040]/30 rounded-lg text-[#1a1040] font-bold hover:bg-gray-200 transition disabled:opacity-50">
                                       Cancel
                                     </button>
                                   </div>

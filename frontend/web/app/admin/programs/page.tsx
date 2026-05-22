@@ -7,11 +7,17 @@ import Footer from "@/components/Footer";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import axios from "axios";
 import { dataCache } from "@/lib/dataCache";
+import { useToast } from "@/components/Toast";
 
 export default function AdminPrograms() {
+  const { addToast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Fetch programs from backend
   const fetchPrograms = async (force = false) => {
@@ -29,6 +35,7 @@ export default function AdminPrograms() {
       dataCache.set("programs", res.data);
     } catch (err) {
       console.error("Failed to fetch programs", err);
+      addToast("Failed to fetch programs.", "error");
     } finally {
       setLoading(false);
     }
@@ -39,6 +46,7 @@ export default function AdminPrograms() {
   }, []);
 
   const handleAddNewProgram = async () => {
+    setIsAdding(true);
     try {
       const res = await axios.post("http://localhost:4000/api/programs", {
         title: "New Program",
@@ -47,32 +55,47 @@ export default function AdminPrograms() {
       });
       setPrograms([res.data, ...programs]);
       setExpandedId(res.data.id);
+      setEditingId(res.data.id);
       dataCache.clear();
+      addToast("New program template created.", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to create new program.", "error");
+    } finally {
+      setIsAdding(false);
     }
   };
 
   const handleUpdate = async (id: string, updates: any) => {
+    setSavingId(id);
     try {
       const res = await axios.patch(`http://localhost:4000/api/programs/${id}`, updates);
       setPrograms(programs.map(p => p.id === id ? res.data : p));
       dataCache.clear();
-      alert("Saved successfully!");
+      setEditingId(null);
+      addToast("Saved successfully!", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to save changes.", "error");
+    } finally {
+      setSavingId(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this program? This will delete all related schedule, resources and enrollments!")) return;
+    setDeletingId(id);
     try {
       await axios.delete(`http://localhost:4000/api/programs/${id}`);
       setPrograms(programs.filter(p => p.id !== id));
       setExpandedId(null);
       dataCache.clear();
+      addToast("Program deleted successfully.", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to delete program.", "error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -109,7 +132,10 @@ export default function AdminPrograms() {
                         <div key={prog.id} className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300">
                           <div 
                             className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
-                            onClick={() => setExpandedId(isExpanded ? null : prog.id)}
+                            onClick={() => {
+                              setExpandedId(isExpanded ? null : prog.id);
+                              if (isExpanded) setEditingId(null);
+                            }}
                           >
                             <span>{prog.title || "New Program"}</span>
                             {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
@@ -117,25 +143,74 @@ export default function AdminPrograms() {
                           
                           {isExpanded && (
                             <div className="px-6 pb-6 pt-2 flex flex-col gap-4">
-                              <input 
-                                type="text" 
-                                value={prog.title || ""}
-                                onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, title: e.target.value } : p))}
-                                placeholder="Program Name"
-                                className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-bold text-base md:text-lg"
-                              />
-                              <textarea 
-                                value={prog.description || ""}
-                                onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, description: e.target.value } : p))}
-                                placeholder="Add description" 
-                                className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition min-h-[100px] resize-y font-semibold"
-                              />
+                              {editingId === prog.id ? (
+                                <>
+                                  <input 
+                                    type="text" 
+                                    value={prog.title || ""}
+                                    onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, title: e.target.value } : p))}
+                                    placeholder="Program Name"
+                                    className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-bold text-base md:text-lg"
+                                  />
+                                  <input 
+                                    type="number" 
+                                    value={prog.price !== undefined ? prog.price : 0}
+                                    onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, price: e.target.value } : p))}
+                                    placeholder="Program Price (₦)"
+                                    className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-semibold"
+                                  />
+                                  <textarea 
+                                    value={prog.description || ""}
+                                    onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, description: e.target.value } : p))}
+                                    placeholder="Add description" 
+                                    className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition min-h-[100px] resize-y font-semibold"
+                                  />
+                                </>
+                              ) : (
+                                <>
+                                  <h3 className="font-bold text-lg md:text-xl text-[#1a1040]">{prog.title || "Untitled Program"}</h3>
+                                  <p className="font-bold text-sm text-[#1a1040]/70">Price: ₦{prog.price !== undefined ? Number(prog.price).toFixed(2) : "0.00"}</p>
+                                  <p className="text-[#1a1040]/80 whitespace-pre-wrap">{prog.description || "No description available."}</p>
+                                </>
+                              )}
                               <div className="flex gap-4 mt-2">
-                                  <button onClick={() => handleUpdate(prog.id, { title: prog.title, description: prog.description })} className="bg-[#00ff00] text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-[#00e600] transition shadow-sm">
-                                    Save
-                                  </button>
-                                  <button onClick={() => handleDelete(prog.id)} className="bg-transparent border border-[#1a1040]/50 text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-red-500 hover:border-red-500 hover:text-white transition shadow-sm">
-                                    Delete
+                                  {editingId === prog.id ? (
+                                    <button 
+                                      onClick={() => handleUpdate(prog.id, { title: prog.title, description: prog.description, price: Number(prog.price || 0) })} 
+                                      disabled={savingId === prog.id || deletingId === prog.id} 
+                                      className="bg-[#00ff00] text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-[#00e600] transition shadow-sm disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                                    >
+                                      {savingId === prog.id ? (
+                                        <>
+                                          <div className="w-4 h-4 border-2 border-[#1a1040] border-t-transparent rounded-full animate-spin" />
+                                          Saving...
+                                        </>
+                                      ) : (
+                                        "Save"
+                                      )}
+                                    </button>
+                                  ) : (
+                                    <button 
+                                      onClick={() => setEditingId(prog.id)} 
+                                      disabled={savingId !== null || deletingId !== null} 
+                                      className="bg-[#00ff00] text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-[#00e600] transition shadow-sm disabled:opacity-50"
+                                    >
+                                      Edit
+                                    </button>
+                                  )}
+                                  <button 
+                                    onClick={() => handleDelete(prog.id)} 
+                                    disabled={savingId === prog.id || deletingId === prog.id} 
+                                    className="bg-transparent border border-[#1a1040]/50 text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-red-500 hover:border-red-500 hover:text-white transition shadow-sm disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                                  >
+                                    {deletingId === prog.id ? (
+                                      <>
+                                        <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                                        Deleting...
+                                      </>
+                                    ) : (
+                                      "Delete"
+                                    )}
                                   </button>
                               </div>
                             </div>
@@ -149,9 +224,17 @@ export default function AdminPrograms() {
                 <div className="flex justify-center mt-10 md:mt-24">
                   <button 
                     onClick={handleAddNewProgram}
-                    className="bg-[#00ff00] text-[#1a1040] font-bold text-sm sm:text-lg py-3 sm:py-3.5 px-6 sm:px-10 rounded-xl sm:rounded-2xl hover:bg-[#00e600] transition shadow-md"
+                    disabled={isAdding}
+                    className="bg-[#00ff00] text-[#1a1040] font-bold text-sm sm:text-lg py-3 sm:py-3.5 px-6 sm:px-10 rounded-xl sm:rounded-2xl hover:bg-[#00e600] transition shadow-md disabled:opacity-50 inline-flex items-center justify-center gap-2"
                   >
-                    Add New Program
+                    {isAdding ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-[#1a1040] border-t-transparent rounded-full animate-spin" />
+                        Adding Program...
+                      </>
+                    ) : (
+                      "Add New Program"
+                    )}
                   </button>
                 </div>
               </div>

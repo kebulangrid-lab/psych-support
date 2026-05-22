@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,10 +10,18 @@ import Footer from "@/components/Footer";
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push("/admin/sign-in");
+    setIsLoggingOut(true);
+    try {
+      await supabase.auth.signOut();
+      router.push("/admin/sign-in");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -76,9 +85,17 @@ export default function AdminDashboard() {
               <div className="mt-8 sm:mt-16">
                 <button
                   onClick={handleLogout}
-                  className="inline-flex items-center justify-center px-8 py-3 sm:px-10 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d3454]/60 border border-white/30 text-white/90 font-semibold text-xs sm:text-sm hover:bg-[#0d3454]/80 hover:border-white/40 transition cursor-pointer"
+                  disabled={isLoggingOut}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3 sm:px-10 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d3454]/60 border border-white/30 text-white/90 font-semibold text-xs sm:text-sm hover:bg-[#0d3454]/80 hover:border-white/40 transition cursor-pointer disabled:opacity-50"
                 >
-                  Log Out
+                  {isLoggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    "Log Out"
+                  )}
                 </button>
               </div>
             </div>

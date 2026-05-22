@@ -1,23 +1,89 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaAngleDown, FaAngleUp, FaFilePdf, FaDownload } from "react-icons/fa";
+import axios from "axios";
+import { useToast } from "@/components/Toast";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function ClientResources() {
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const router = useRouter();
+  const { user, loading: authLoading, isEnrolled, isEnrolledLoading } = useAuth();
+  const { addToast } = useToast();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const redirectingRef = useRef(false);
 
-  const [programs] = useState([
-    { id: 1, name: "360 ° Stress Management", resources: [{ id: 101, name: "Stress Relief Guide" }] },
-    { id: 2, name: "Psych-Support Program 2", resources: [] }
-  ]);
+  useEffect(() => {
+    if (authLoading || isEnrolledLoading) return;
+    if (!user) {
+      router.push("/client/sign-in");
+      return;
+    }
+    if (!isEnrolled) {
+      if (!redirectingRef.current) {
+        redirectingRef.current = true;
+        addToast("You must enroll in a program to view resources.", "error");
+        router.push("/client/programs");
+      }
+      return;
+    }
+    fetchData();
+  }, [user, authLoading, isEnrolled, isEnrolledLoading]);
 
-  const toggleExpand = (id: number) => {
+  const fetchData = async () => {
+    if (!user) return;
+    try {
+      const [progRes, enrollRes, resRes] = await Promise.all([
+        axios.get("http://localhost:4000/api/programs"),
+        axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`),
+        axios.get(`http://localhost:4000/api/resources?client_id=${user.id}`)
+      ]);
+      
+      const progs = progRes.data || [];
+      const enrollments = enrollRes.data || [];
+      const allResources = resRes.data || [];
+
+      // Filter programs to only enrolled ones
+      const enrolledProgs = progs.filter((p: any) => 
+        enrollments.some((e: any) => e.program_id === p.id)
+      );
+
+      const grouped = enrolledProgs.map((p: any) => ({
+        id: p.id,
+        name: p.title || p.name || `Program ${p.id}`,
+        resources: allResources.filter((r: any) => r.program_id === p.id)
+      }));
+
+      setPrograms(grouped);
+    } catch (err) {
+      console.error(err);
+      addToast("Failed to fetch learning resources.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleExpand = (id: string) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
+
+  if (authLoading || isEnrolledLoading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Checking dashboard access...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
@@ -58,51 +124,62 @@ export default function ClientResources() {
               {/* Accordion Container */}
               <div className="w-full bg-[#8c97a7] rounded-[16px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 md:p-12 relative flex flex-col flex-1">
                 <div className="flex flex-col w-full gap-4 max-w-4xl mx-auto">
-                  {programs.map((prog) => {
-                    const isExpanded = expandedId === prog.id;
-                    return (
-                      <div 
-                        key={prog.id} 
-                        className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300"
-                      >
+                  {loading ? (
+                    <p className="text-center font-bold text-lg">Loading resources...</p>
+                  ) : programs.length > 0 ? (
+                    programs.map((prog) => {
+                      const isExpanded = expandedId === prog.id;
+                      return (
                         <div 
-                          className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
-                          onClick={() => toggleExpand(prog.id)}
+                          key={prog.id} 
+                          className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] overflow-hidden transition-all duration-300"
                         >
-                          <span>{prog.name}</span>
-                          {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
-                        </div>
-                        
-                        {isExpanded && (
-                          <div className="px-6 pb-6 pt-2 flex flex-col gap-4 border-t border-gray-200">
-                            
-                            {/* Resources List */}
-                            {prog.resources.length > 0 ? (
-                              <div className="flex flex-col gap-3 mt-2">
-                                {prog.resources.map(res => (
-                                  <div key={res.id} className="flex justify-between items-center bg-white px-4 py-3 rounded-lg border border-gray-200 shadow-sm">
-                                    <div className="flex items-center gap-3 w-[85%]">
-                                      <FaFilePdf className="text-red-500 text-2xl flex-shrink-0" />
-                                      <span className="font-semibold text-sm md:text-base break-words">{res.name}.pdf</span>
-                                    </div>
-                                    <button 
-                                      className="text-blue-500 p-2 hover:bg-blue-50 rounded-md transition flex-shrink-0"
-                                      title="Download Resource"
-                                    >
-                                      <FaDownload />
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-gray-500 italic text-sm mt-2">No resources available.</p>
-                            )}
-
+                          <div 
+                            className="px-6 py-4 flex justify-between items-center font-bold text-base md:text-lg cursor-pointer hover:bg-white transition"
+                            onClick={() => toggleExpand(prog.id)}
+                          >
+                            <span>{prog.name}</span>
+                            {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
                           </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                          
+                          {isExpanded && (
+                            <div className="px-6 pb-6 pt-2 flex flex-col gap-4 border-t border-gray-200">
+                              
+                              {/* Resources List */}
+                              {prog.resources && prog.resources.length > 0 ? (
+                                <div className="flex flex-col gap-3 mt-2">
+                                  {prog.resources.map((res: any) => (
+                                    <div key={res.id} className="flex justify-between items-center bg-white px-4 py-3 rounded-lg border border-gray-200 shadow-sm">
+                                      <div className="flex items-center gap-3 w-[85%]">
+                                        <FaFilePdf className="text-red-500 text-2xl flex-shrink-0" />
+                                        <span className="font-semibold text-sm md:text-base break-words">
+                                          {res.title || res.name || 'Resource'}.pdf
+                                        </span>
+                                      </div>
+                                      <a 
+                                        href={res.cloudinary_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-500 p-2 hover:bg-blue-50 rounded-md transition flex-shrink-0"
+                                        title="Download Resource"
+                                      >
+                                        <FaDownload />
+                                      </a>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-gray-500 italic text-sm mt-2">No resources available.</p>
+                              )}
+
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-center italic mt-4 font-bold text-lg">No programs found.</p>
+                  )}
                 </div>
               </div>
 

@@ -7,44 +7,31 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import axios from "axios";
-import { dataCache } from "@/lib/dataCache";
+import { useToast } from "@/components/Toast";
 
 export default function AdminTimeTable() {
+  const { addToast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  const fetchData = async (force = false) => {
-    if (!force) {
-      const cachedProgs = dataCache.get("programs");
-      const cachedTimeTables = dataCache.get("time-tables");
-      if (cachedProgs && cachedTimeTables) {
-        const grouped = cachedProgs.map((p: any) => ({
-          id: p.id,
-          name: p.title || p.name || `Program ${p.id}`,
-          timeTable: cachedTimeTables.filter((t: any) => t.program_id === p.id)
-        }));
-        setPrograms(grouped);
-        setLoading(false);
-        return;
-      }
-    }
+  const fetchData = async () => {
     try {
       const [progRes, timeRes] = await Promise.all([
         axios.get("http://localhost:4000/api/programs"),
         axios.get("http://localhost:4000/api/time-tables")
       ]);
-      
+
       const progs = progRes.data;
       const tables = timeRes.data;
-      dataCache.set("programs", progs);
-      dataCache.set("time-tables", tables);
 
       const grouped = progs.map((p: any) => ({
         id: p.id,
@@ -55,6 +42,7 @@ export default function AdminTimeTable() {
       setPrograms(grouped);
     } catch (err) {
       console.error(err);
+      addToast("Failed to fetch timetable data.", "error");
     } finally {
       setLoading(false);
     }
@@ -69,7 +57,7 @@ export default function AdminTimeTable() {
       if (p.id === progId) {
         return {
           ...p,
-          timeTable: p.timeTable.map((entry: any) => 
+          timeTable: p.timeTable.map((entry: any) =>
             entry.id === entryId ? { ...entry, [field]: value, _isDirty: true } : entry
           )
         };
@@ -84,7 +72,7 @@ export default function AdminTimeTable() {
         return {
           ...p,
           timeTable: [
-            ...p.timeTable, 
+            ...p.timeTable,
             { id: `new_${Date.now()}`, program_id: progId, date: "", time: "", topic: "", link: "", _isNew: true }
           ]
         };
@@ -95,13 +83,19 @@ export default function AdminTimeTable() {
 
   const handleDelete = async (progId: string, entryId: string) => {
     if (!entryId.startsWith('new_')) {
+      setDeletingId(entryId);
       try {
         await axios.delete(`http://localhost:4000/api/time-tables/${entryId}`);
-        dataCache.clear();
+        addToast("Timetable entry deleted successfully.", "success");
       } catch (err) {
         console.error(err);
+        addToast("Failed to delete timetable entry.", "error");
         return;
+      } finally {
+        setDeletingId(null);
       }
+    } else {
+      addToast("Timetable entry removed.", "info");
     }
     setPrograms(programs.map(p => {
       if (p.id === progId) {
@@ -112,7 +106,7 @@ export default function AdminTimeTable() {
   };
 
   const handleSave = async () => {
-    setLoading(true);
+    setIsSaving(true);
     try {
       for (const p of programs) {
         for (const t of p.timeTable) {
@@ -130,13 +124,14 @@ export default function AdminTimeTable() {
           }
         }
       }
-      dataCache.clear();
-      await fetchData(true);
+      await fetchData();
       setIsEditing(false);
+      addToast("Timetable saved successfully!", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to save timetable.", "error");
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -150,12 +145,12 @@ export default function AdminTimeTable() {
       <div>
         <Sidebar active="Time Table" role="admin" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
-          
+
           <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
             <div className="w-full max-w-[1100px] border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-6 sm:p-10 md:p-14 mb-24 sm:mb-16 flex flex-col gap-6 sm:gap-10">
-              
+
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div>
                   <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
@@ -166,7 +161,7 @@ export default function AdminTimeTable() {
                   </p>
                 </div>
                 {!isEditing && !loading && (
-                  <button 
+                  <button
                     onClick={() => setIsEditing(true)}
                     className="px-6 py-2.5 rounded-xl bg-[#0d3454]/60 border border-white/30 text-white font-semibold text-sm hover:bg-[#0d3454]/80 hover:border-white/50 transition self-start md:mt-4"
                   >
@@ -188,7 +183,7 @@ export default function AdminTimeTable() {
                             <span>{prog.name}</span>
                             {isExpanded ? <FaAngleUp className="text-[#1a1040]/70" /> : <FaAngleDown className="text-[#1a1040]/70" />}
                           </div>
-                          
+
                           {isExpanded && (
                             <div className="px-4 sm:px-6 pb-6 pt-2 flex flex-col border-t border-gray-200">
                               <div className="w-full rounded-xl overflow-x-auto mt-2">
@@ -205,20 +200,30 @@ export default function AdminTimeTable() {
                                         <div key={row.id} className="grid grid-cols-4 px-2 py-3 font-medium text-sm border-b border-[#1a1040]/10 last:border-0 items-center">
                                           {isEditing ? (
                                             <>
-                                              <div className="pr-2"><input type="text" value={row.date || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'date', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Date" /></div>
-                                              <div className="pr-2"><input type="text" value={row.time || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'time', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Time" /></div>
-                                              <div className="pr-2"><input type="text" value={row.topic || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'topic', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Topic" /></div>
+                                              <div className="pr-2"><input type="text" value={row.date || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'date', e.target.value)} disabled={isSaving || deletingId !== null} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition disabled:opacity-50" placeholder="Date" /></div>
+                                              <div className="pr-2"><input type="text" value={row.time || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'time', e.target.value)} disabled={isSaving || deletingId !== null} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition disabled:opacity-50" placeholder="Time" /></div>
+                                              <div className="pr-2"><input type="text" value={row.topic || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'topic', e.target.value)} disabled={isSaving || deletingId !== null} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition disabled:opacity-50" placeholder="Topic" /></div>
                                               <div className="pr-2 flex gap-2">
-                                                <input type="text" value={row.link || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'link', e.target.value)} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition" placeholder="Link" />
-                                                <button onClick={() => handleDelete(prog.id, row.id)} className="bg-red-500 hover:bg-red-600 text-white px-2 rounded shadow transition text-xs font-bold shrink-0">Del</button>
+                                                <input type="text" value={row.link || ""} onChange={(e) => handleUpdate(prog.id, row.id, 'link', e.target.value)} disabled={isSaving || deletingId !== null} className="w-full bg-white border border-[#1a1040]/20 rounded px-2 py-1.5 outline-none text-[#1a1040] focus:border-[#1a1040]/50 transition disabled:opacity-50 flex-grow" placeholder="Link" />
+                                                <button
+                                                  onClick={() => handleDelete(prog.id, row.id)}
+                                                  disabled={isSaving || deletingId !== null}
+                                                  className="bg-red-500 hover:bg-red-600 text-white px-2 rounded shadow transition text-xs font-bold shrink-0 disabled:opacity-50 flex items-center justify-center min-w-[32px] min-h-[28px]"
+                                                >
+                                                  {deletingId === row.id ? (
+                                                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                  ) : (
+                                                    "Del"
+                                                  )}
+                                                </button>
                                               </div>
                                             </>
                                           ) : (
                                             <>
                                               <div className="opacity-80 pr-2 truncate">{row.date}</div>
                                               <div className="opacity-80 pr-2 truncate">{row.time}</div>
-                                              <div className="opacity-80 pr-2 break-words whitespace-normal">{row.topic}</div>
-                                              <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition break-all whitespace-normal pr-2">
+                                              <div className="opacity-80 pr-2 truncate">{row.topic}</div>
+                                              <div className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition truncate pr-2">
                                                 {row.link && <a href={row.link.startsWith('http') ? row.link : `https://${row.link}`} target="_blank" rel="noreferrer">{row.link}</a>}
                                               </div>
                                             </>
@@ -226,27 +231,18 @@ export default function AdminTimeTable() {
                                         </div>
                                       ))
                                     ) : (
-                                      <div className="py-6 flex flex-col items-center gap-4">
-                                        <p className="text-gray-500 italic text-sm">No schedule created for this program.</p>
-                                        {!isEditing && (
-                                          <button
-                                            onClick={() => {
-                                              setIsEditing(true);
-                                              handleAddNew(prog.id);
-                                            }}
-                                            className="px-4 py-2 bg-[#1a1040] text-white font-bold text-sm rounded-lg hover:bg-[#1a1040]/80 transition shadow-sm cursor-pointer"
-                                          >
-                                            + Create Timetable
-                                          </button>
-                                        )}
-                                      </div>
+                                      <p className="text-gray-500 italic text-sm py-4">No schedule created for this program.</p>
                                     )}
                                   </div>
                                 </div>
                               </div>
 
                               {isEditing && (
-                                <button onClick={() => handleAddNew(prog.id)} className="mt-4 bg-[#1a1040] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#1a1040]/80 transition shadow-sm w-fit text-sm">
+                                <button
+                                  onClick={() => handleAddNew(prog.id)}
+                                  disabled={isSaving || deletingId !== null}
+                                  className="mt-4 bg-[#1a1040] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#1a1040]/80 transition shadow-sm w-fit text-sm disabled:opacity-50"
+                                >
                                   + Add New Entry
                                 </button>
                               )}
@@ -263,12 +259,26 @@ export default function AdminTimeTable() {
               </div>
 
               <div className="flex flex-col-reverse sm:flex-row justify-between items-center gap-4 mt-8 sm:mt-12 mb-4">
-                <Link href="/admin/profile" className="w-full sm:w-auto inline-flex items-center justify-center px-10 sm:px-16 py-3 rounded-xl bg-[#0d1520]/80 border border-white/30 text-white/90 font-bold text-sm hover:bg-[#0d1520] hover:border-white/50 transition shadow-md">
+                <Link
+                  href="/admin/profile"
+                  className={`w-full sm:w-auto inline-flex items-center justify-center px-10 sm:px-16 py-3 rounded-xl bg-[#0d1520]/80 border border-white/30 text-white/90 font-bold text-sm hover:bg-[#0d1520] hover:border-white/50 transition shadow-md ${isSaving || deletingId !== null ? 'pointer-events-none opacity-50' : ''}`}
+                >
                   Back
                 </Link>
                 {isEditing && (
-                  <button onClick={handleSave} className="w-full sm:w-auto inline-flex items-center justify-center px-10 sm:px-16 py-3 rounded-xl bg-[#00ff00] text-[#1a1040] font-bold text-sm hover:bg-[#00e600] transition shadow-md">
-                    {loading ? 'Saving...' : 'Save'}
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving || deletingId !== null}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-10 sm:px-16 py-3 rounded-xl bg-[#00ff00] text-[#1a1040] font-bold text-sm hover:bg-[#00e600] transition shadow-md disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-[#1a1040] border-t-transparent rounded-full animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save"
+                    )}
                   </button>
                 )}
               </div>

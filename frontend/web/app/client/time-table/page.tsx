@@ -1,50 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import axios from "axios";
-import { dataCache } from "@/lib/dataCache";
+import { useAuth } from "@/components/AuthProvider";
+import { useToast } from "@/components/Toast";
 
 export default function TimeTablePage() {
+  const router = useRouter();
+  const { user, loading: authLoading, isEnrolled, isEnrolledLoading } = useAuth();
+  const { addToast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [programs, setPrograms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const redirectingRef = useRef(false);
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async (force = false) => {
-    if (!force) {
-      const cachedProgs = dataCache.get("programs");
-      const cachedTimeTables = dataCache.get("time-tables");
-      if (cachedProgs && cachedTimeTables) {
-        const grouped = cachedProgs.map((p: any) => ({
-          id: p.id,
-          name: p.title || p.name || `Program ${p.id}`,
-          timeTable: cachedTimeTables.filter((t: any) => t.program_id === p.id)
-        }));
-        setPrograms(grouped);
-        setLoading(false);
-        return;
-      }
+    if (authLoading || isEnrolledLoading) return;
+    if (!user) {
+      router.push("/client/sign-in");
+      return;
     }
+    if (!isEnrolled) {
+      if (!redirectingRef.current) {
+        redirectingRef.current = true;
+        addToast("You must enroll in a program to view timetables.", "error");
+        router.push("/client/programs");
+      }
+      return;
+    }
+    fetchData();
+  }, [user, authLoading, isEnrolled, isEnrolledLoading]);
+
+  const fetchData = async () => {
+    if (!user) return;
     try {
-      const [progRes, timeRes] = await Promise.all([
+      const [progRes, enrollRes, timeRes] = await Promise.all([
         axios.get("http://localhost:4000/api/programs"),
-        axios.get("http://localhost:4000/api/time-tables")
+        axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`),
+        axios.get(`http://localhost:4000/api/time-tables?client_id=${user.id}`)
       ]);
       
-      const progs = progRes.data;
-      const tables = timeRes.data;
-      dataCache.set("programs", progs);
-      dataCache.set("time-tables", tables);
+      const progs = progRes.data || [];
+      const enrollments = enrollRes.data || [];
+      const tables = timeRes.data || [];
 
-      const grouped = progs.map((p: any) => ({
+      // Only show programs client is enrolled in
+      const enrolledProgs = progs.filter((p: any) => 
+        enrollments.some((e: any) => e.program_id === p.id)
+      );
+
+      const grouped = enrolledProgs.map((p: any) => ({
         id: p.id,
         name: p.title || p.name || `Program ${p.id}`,
         timeTable: tables.filter((t: any) => t.program_id === p.id)
@@ -53,6 +64,7 @@ export default function TimeTablePage() {
       setPrograms(grouped);
     } catch (err) {
       console.error(err);
+      addToast("Failed to load timetables.", "error");
     } finally {
       setLoading(false);
     }
@@ -61,6 +73,17 @@ export default function TimeTablePage() {
   const toggleExpand = (id: string) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
+
+  if (authLoading || isEnrolledLoading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Checking dashboard access...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">

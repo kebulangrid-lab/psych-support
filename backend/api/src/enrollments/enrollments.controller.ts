@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 
 @Controller('api/enrollments')
@@ -11,8 +11,8 @@ export class EnrollmentsController {
   }
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query('client_id') clientId?: string) {
+    return this.service.findAll(clientId);
   }
 
   @Get(':id')

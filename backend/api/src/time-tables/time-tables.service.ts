@@ -29,7 +29,31 @@ export class TimeTablesService {
     return dbObj;
   }
 
-  async findAll() {
+  async findAll(clientId?: string) {
+    if (clientId) {
+      const { data: enrollments, error: enrollmentError } = await this.supabase.client
+        .from('enrollments')
+        .select('program_id')
+        .eq('client_id', clientId)
+        .eq('payment_status', 'completed');
+
+      if (enrollmentError) throw new InternalServerErrorException(enrollmentError.message);
+
+      const enrolledProgramIds = (enrollments || []).map(e => e.program_id);
+      if (enrolledProgramIds.length === 0) {
+        return [];
+      }
+
+      const { data, error } = await this.supabase.client
+        .from('time_tables')
+        .select('*')
+        .in('program_id', enrolledProgramIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw new InternalServerErrorException(error.message);
+      return (data || []).map(t => this.mapToDto(t));
+    }
+
     const { data, error } = await this.supabase.client.from('time_tables').select('*').order('created_at', { ascending: false });
     if (error) throw new InternalServerErrorException(error.message);
     return (data || []).map(t => this.mapToDto(t));

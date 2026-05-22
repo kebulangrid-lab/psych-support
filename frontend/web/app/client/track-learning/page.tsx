@@ -1,16 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/components/AuthProvider";
+import { useToast } from "@/components/Toast";
+import axios from "axios";
 
 export default function ClientTrackLearning() {
-  const [enrolledPrograms] = useState([
-    { id: 1, name: "360 ° Stress Management", dateEnrolled: "12 Oct 2025" },
-    { id: 2, name: "Cognitive Behavioral Therapy Basic", dateEnrolled: "24 Nov 2025" }
-  ]);
+  const { user, loading: authLoading, isEnrolled, isEnrolledLoading } = useAuth();
+  const { addToast } = useToast();
+  const router = useRouter();
+  const [enrolledPrograms, setEnrolledPrograms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const redirectingRef = useRef(false);
+
+  useEffect(() => {
+    if (authLoading || isEnrolledLoading) return;
+    if (!user) {
+      router.push("/client/sign-in");
+      return;
+    }
+
+    if (!isEnrolled) {
+      if (!redirectingRef.current) {
+        redirectingRef.current = true;
+        addToast("You must enroll in a program to track learning.", "error");
+        router.push("/client/programs");
+      }
+      return;
+    }
+    
+    const fetchEnrollments = async () => {
+      try {
+        const [progRes, enrollRes] = await Promise.all([
+          axios.get("http://localhost:4000/api/programs"),
+          axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`)
+        ]);
+
+        const programs = progRes.data || [];
+        const enrollments = enrollRes.data || [];
+
+        const mapped = enrollments.map((e: any) => {
+          const program = programs.find((p: any) => p.id === e.program_id);
+          return {
+            id: e.id,
+            name: program ? program.title : `Program (${e.program_id})`,
+            dateEnrolled: e.enrolled_at ? new Date(e.enrolled_at).toLocaleDateString("en-US", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric"
+            }) : "N/A"
+          };
+        });
+
+        setEnrolledPrograms(mapped);
+      } catch (err) {
+        console.error("Error fetching learning track:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEnrollments();
+  }, [user, authLoading, isEnrolled, isEnrolledLoading, router, addToast]);
+
+  if (authLoading || isEnrolledLoading || loading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Checking dashboard access...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">

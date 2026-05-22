@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipe, MaxFileSizeValidator, FileTypeValidator, Query } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ResourcesService } from './resources.service';
 
 @Controller('api/resources')
@@ -6,13 +7,25 @@ export class ResourcesController {
   constructor(private readonly service: ResourcesService) {}
 
   @Post()
-  create(@Body() createDto: any) {
-    return this.service.create(createDto);
+  @UseInterceptors(FileInterceptor('file'))
+  create(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB limit
+          new FileTypeValidator({ fileType: 'application/pdf' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() body: any,
+  ) {
+    return this.service.create(file, body);
   }
 
   @Get()
-  findAll() {
-    return this.service.findAll();
+  findAll(@Query('client_id') clientId?: string) {
+    return this.service.findAll(clientId);
   }
 
   @Get(':id')

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import axios from "axios";
 import Footer from "./Footer";
 
 interface AuthFormProps {
@@ -34,7 +35,22 @@ export default function AuthForm({ type, role }: AuthFormProps) {
         
         // Use backend profile checks or simply assume proper route routing.
         if (data.user) {
-          router.push(`/${role}/profile`);
+          if (role === "client") {
+            try {
+              const res = await axios.get(`http://localhost:4000/api/enrollments?client_id=${data.user.id}`);
+              const enrollments = res.data || [];
+              if (enrollments.length > 0) {
+                router.push("/client/profile");
+              } else {
+                router.push("/client/programs");
+              }
+            } catch (err) {
+              console.error("Error checking enrollments on sign-in:", err);
+              router.push("/client/programs");
+            }
+          } else {
+            router.push("/admin/profile");
+          }
         }
       } else {
         if (password !== confirmPassword) {
@@ -55,7 +71,22 @@ export default function AuthForm({ type, role }: AuthFormProps) {
         if (error) throw error;
         
         if (data.user) {
-          router.push(`/${role}/sign-in`);
+          if (role === "client") {
+            try {
+              const res = await axios.get(`http://localhost:4000/api/enrollments?client_id=${data.user.id}`);
+              const enrollments = res.data || [];
+              if (enrollments.length > 0) {
+                router.push("/client/profile");
+              } else {
+                router.push("/client/programs");
+              }
+            } catch (err) {
+              console.error("Error checking enrollments on sign-up:", err);
+              router.push("/client/programs");
+            }
+          } else {
+            router.push("/admin/profile");
+          }
         }
       }
     } catch (err: any) {
@@ -158,9 +189,18 @@ export default function AuthForm({ type, role }: AuthFormProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-2 rounded-2xl bg-[#34A853] hover:bg-[#2d9147] text-white font-semibold transition-all duration-300 shadow-lg whitespace-nowrap disabled:opacity-50"
+                className="px-8 py-2 rounded-2xl bg-[#34A853] hover:bg-[#2d9147] text-white font-semibold transition-all duration-300 shadow-lg whitespace-nowrap disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
-                {loading ? "Please wait..." : isSignIn ? "Log In" : "Register"}
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Please wait...
+                  </>
+                ) : isSignIn ? (
+                  "Log In"
+                ) : (
+                  "Register"
+                )}
               </button>
             </div>
           </form>

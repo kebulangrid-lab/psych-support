@@ -1,49 +1,85 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-
-// Dummy data for programs
-const programsData = [
-  {
-    id: 1,
-    title: "360 ° Stress Management",
-    image: "/pricingComplete.png", // using available placeholder from original design
-    purchased: false,
-    description1: "The programme offers smart and new ways of managing stress to overcome its negative psychosocial impacts. Participants would be able to analyse and develop 360° coping strategies and action guide for managing chronic stress that leads to problems in decision making, work attitudes and sabotage, work-life balance, and overall health.",
-    description2: "Specifically, our programme is designed as a holistic tool for participants' effective management of stress that is a known major trigger for many problems that include: Anger management, chronic diseases, distress in thinking and emotions, sleep disorders, career difficulties, relationship difficulties, accidents, anxiety-related disorders, PTSD, forms of depression, vulnerability to drug use, failure to seek and utilise medical help, non-adherence to medical advice and treatment, domestic and workplace violence, and sudden death."
-  },
-  {
-    id: 2,
-    title: "Cognitive Behavioral Therapy Basic",
-    image: "/pricingComplete.png",
-    purchased: true,
-    description1: "This introductory programme helps participants understand the relationship between their thoughts, feelings, and behaviors.",
-    description2: "Learn practical techniques to identify and challenge negative thought patterns and develop healthier cognitive habits."
-  },
-  {
-    id: 3,
-    title: "Advanced Mindfulness Training",
-    image: "/pricingComplete.png",
-    purchased: false,
-    description1: "Deepen your mindfulness practice with advanced techniques for daily life integration.",
-    description2: "This course is designed for those who have completed basic mindfulness training and are looking to expand their skills effectively."
-  }
-];
+import { useAuth } from "@/components/AuthProvider";
+import axios from "axios";
 
 export default function ProgramsPage() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [programs, setPrograms] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  
-  const currentProgram = programsData[currentIndex];
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchData = async () => {
+      try {
+        const [progRes, enrollRes] = await Promise.all([
+          axios.get("http://localhost:4000/api/programs"),
+          axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`)
+        ]);
+
+        setPrograms(progRes.data || []);
+        setEnrollments(enrollRes.data || []);
+      } catch (err) {
+        console.error("Error fetching programs and enrollments:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Loading programs...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (programs.length === 0) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <Image
+            src="/landing.jpg"
+            alt="Background"
+            fill
+            priority
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-purple-950/20" />
+        </div>
+        <Sidebar active="Programs" />
+        <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen justify-center items-center">
+          <div className="border border-white/50 bg-[#1a2060]/10 backdrop-blur-md rounded-[16px] p-8 text-center">
+            <h2 className="text-2xl font-bold mb-2">No Programs Available</h2>
+            <p className="text-white/80">Check back later for newly added programs.</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const currentProgram = programs[currentIndex];
+  const isEnrolled = enrollments.some((e: any) => e.program_id === currentProgram.id);
 
   const handleNext = () => {
-    if (currentIndex < programsData.length - 1) {
+    if (currentIndex < programs.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
   };
@@ -59,15 +95,21 @@ export default function ProgramsPage() {
     router.push(`/client/programs/payment?programId=${currentProgram.id}`);
   };
 
+  // Split description text by double newlines for formatting if possible
+  const desc = currentProgram.description || "";
+  const paragraphs = desc.split("\n\n");
+  const description1 = paragraphs[0] || "No description provided.";
+  const description2 = paragraphs.slice(1).join("\n\n") || "";
+
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
-            src="/landing.jpg"
-            alt="Background"
-            fill
-            priority
-            className="object-cover"
+          src="/landing.jpg"
+          alt="Background"
+          fill
+          priority
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-purple-950/20" />
       </div>
@@ -94,19 +136,20 @@ export default function ProgramsPage() {
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
                   {/* Left Column content - Icon block */}
                   <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] bg-[#9c00ff] flex items-center justify-center flex-shrink-0 relative overflow-hidden hidden md:block">
-                     <Image src={currentProgram.image} alt={currentProgram.title} fill className="object-cover opacity-80 mix-blend-screen" />
-                     {/* Using the image as placeholder since exact icon from screenshot is not available */}
+                     <Image src={currentProgram.thumbnail_url || "/pricingComplete.png"} alt={currentProgram.title} fill className="object-cover opacity-80 mix-blend-screen" />
                   </div>
                 
                   {/* Right Column content - Text block */}
                   <div className="flex flex-col flex-1 items-start text-left text-black/90 font-medium text-xs sm:text-sm leading-relaxed tracking-wide z-10 w-full">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black">{currentProgram.title}</h2>
                     <p className="mb-3">
-                      {currentProgram.description1}
+                      {description1}
                     </p>
-                    <p className="mb-4">
-                      {currentProgram.description2}
-                    </p>
+                    {description2 && (
+                      <p className="mb-4">
+                        {description2}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -114,7 +157,7 @@ export default function ProgramsPage() {
               {/* Controls & Button */}
               <div className="flex justify-between items-center mt-2 px-1">
                 <div>
-                  {currentProgram.purchased ? (
+                  {isEnrolled ? (
                     <button className="bg-gray-500 text-white px-6 py-2 rounded-[4px] font-semibold text-xs sm:text-sm border border-gray-600 cursor-not-allowed shadow-lg">
                       Purchased
                     </button>
@@ -138,8 +181,8 @@ export default function ProgramsPage() {
                   </button>
                   <button 
                     onClick={handleNext}
-                    disabled={currentIndex === programsData.length - 1}
-                    className={`w-8 h-8 rounded-full border border-white flex items-center justify-center transition-all ${currentIndex === programsData.length - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"}`}
+                    disabled={currentIndex === programs.length - 1}
+                    className={`w-8 h-8 rounded-full border border-white flex items-center justify-center transition-all ${currentIndex === programs.length - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"}`}
                   >
                     <FaArrowRight className="text-sm" />
                   </button>

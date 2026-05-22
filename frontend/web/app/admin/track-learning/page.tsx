@@ -7,8 +7,10 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import axios from "axios";
 import { dataCache } from "@/lib/dataCache";
+import { useToast } from "@/components/Toast";
 
 export default function AdminTrackLearning() {
+  const { addToast } = useToast();
   const [payments, setPayments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState(0);
@@ -28,12 +30,15 @@ export default function AdminTrackLearning() {
           const amountStr = prog?.price ? `₦${prog.price}` : "₦0";
           revenue += (prog?.price || 0);
 
+          const profileObj = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
+          const clientName = profileObj?.full_name || `User ID: ${(e.client_id || e.user_id || "").substring(0, 8)}...`;
+
           return {
             id: e.id,
-            name: `User ID: ${e.user_id.substring(0, 8)}...`,
+            name: clientName,
             program: prog?.title || prog?.name || `Program ${e.program_id}`,
             amount: amountStr,
-            date: new Date(e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })
+            date: new Date(e.enrolled_at || e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })
           };
         });
         setPayments(mapped);
@@ -59,12 +64,15 @@ export default function AdminTrackLearning() {
         const amountStr = prog?.price ? `₦${prog.price}` : "₦0";
         revenue += (prog?.price || 0);
 
+        const profileObj = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
+        const clientName = profileObj?.full_name || `User ID: ${(e.client_id || e.user_id || "").substring(0, 8)}...`;
+
         return {
           id: e.id,
-          name: `User ID: ${e.user_id.substring(0, 8)}...`, // Display shortened UID since we don't have user name
+          name: clientName,
           program: prog?.title || prog?.name || `Program ${e.program_id}`,
           amount: amountStr,
-          date: new Date(e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })
+          date: new Date(e.enrolled_at || e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })
         };
       });
 
@@ -72,6 +80,7 @@ export default function AdminTrackLearning() {
       setTotalRevenue(revenue);
     } catch (err) {
       console.error(err);
+      addToast("Failed to fetch payments data.", "error");
     } finally {
       setLoading(false);
     }

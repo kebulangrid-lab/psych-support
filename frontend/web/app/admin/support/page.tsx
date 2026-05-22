@@ -6,58 +6,61 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaTrash, FaPhoneAlt } from "react-icons/fa";
 import axios from "axios";
-import { dataCache } from "@/lib/dataCache";
+import { useToast } from "@/components/Toast";
 
 export default function AdminSupport() {
+  const { addToast } = useToast();
   const [numbers, setNumbers] = useState<any[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newNumber, setNewNumber] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSavingNewNumber, setIsSavingNewNumber] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchNumbers();
   }, []);
 
-  const fetchNumbers = async (force = false) => {
-    if (!force) {
-      const cached = dataCache.get("support");
-      if (cached) {
-        setNumbers(cached);
-        setLoading(false);
-        return;
-      }
-    }
+  const fetchNumbers = async () => {
     try {
       const res = await axios.get("http://localhost:4000/api/support");
       setNumbers(res.data);
-      dataCache.set("support", res.data);
     } catch (err) {
       console.error(err);
+      addToast("Failed to fetch support numbers.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    setDeletingId(id);
     try {
       await axios.delete(`http://localhost:4000/api/support/${id}`);
-      dataCache.clear();
       setNumbers(numbers.filter(n => n.id !== id));
+      addToast("Support number deleted successfully.", "success");
     } catch (err) {
       console.error(err);
+      addToast("Failed to delete support number.", "error");
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const handleAdd = async () => {
     if (newNumber.trim()) {
+      setIsSavingNewNumber(true);
       try {
         const res = await axios.post("http://localhost:4000/api/support", { phone_number: newNumber.trim() });
-        dataCache.clear();
         setNumbers([res.data, ...numbers]);
         setNewNumber("");
         setIsAdding(false);
+        addToast("Support number added successfully.", "success");
       } catch (err) {
         console.error(err);
+        addToast("Failed to add support number.", "error");
+      } finally {
+        setIsSavingNewNumber(false);
       }
     }
   };
@@ -97,12 +100,17 @@ export default function AdminSupport() {
                           </div>
                           <span className="font-bold text-base sm:text-xl truncate">{num.phone_number}</span>
                         </div>
-                        <button 
-                          onClick={() => handleDelete(num.id)} 
-                          className="text-red-500 p-2 sm:p-3 hover:bg-red-100 rounded-lg transition border border-transparent hover:border-red-200 flex-shrink-0" 
+                        <button
+                          onClick={() => handleDelete(num.id)}
+                          disabled={deletingId === num.id || isSavingNewNumber}
+                          className="text-red-500 p-2 sm:p-3 hover:bg-red-100 rounded-lg transition border border-transparent hover:border-red-200 flex-shrink-0 disabled:opacity-50 flex items-center justify-center min-w-[44px] min-h-[44px]"
                           title="Delete Number"
                         >
-                          <FaTrash className="text-lg" />
+                          {deletingId === num.id ? (
+                            <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                          ) : (
+                            <FaTrash className="text-lg" />
+                          )}
                         </button>
                       </div>
                     ))
@@ -113,25 +121,41 @@ export default function AdminSupport() {
                   {isAdding ? (
                     <div className="mt-4 p-5 sm:p-6 border-2 border-dashed border-[#1a1040]/40 rounded-xl bg-white/50 flex flex-col gap-4">
                       <h4 className="font-bold text-[#1a1040] text-lg">Add New Mobile Number</h4>
-                      <input 
-                        type="tel" 
-                        placeholder="e.g. +234 812 345 6789" 
-                        value={newNumber} 
-                        onChange={(e) => setNewNumber(e.target.value)} 
-                        className="w-full bg-white border border-[#1a1040]/20 rounded-lg px-4 py-3 sm:py-4 outline-none focus:border-[#1a1040]/50 transition font-medium text-base shadow-inner" 
+                      <input
+                        type="tel"
+                        placeholder="e.g. +234 812 345 6789"
+                        value={newNumber}
+                        onChange={(e) => setNewNumber(e.target.value)}
+                        disabled={isSavingNewNumber}
+                        className="w-full bg-white border border-[#1a1040]/20 rounded-lg px-4 py-3 sm:py-4 outline-none focus:border-[#1a1040]/50 transition font-medium text-base shadow-inner disabled:opacity-50"
                         autoFocus
                       />
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-                        <button onClick={handleAdd} className="flex-1 bg-[#1a1040] text-white py-3 sm:py-3.5 rounded-xl font-bold hover:bg-[#1a1040]/80 transition shadow-md">
-                          Save Number
+                        <button
+                          onClick={handleAdd}
+                          disabled={isSavingNewNumber}
+                          className="flex-1 bg-[#1a1040] text-white py-3 sm:py-3.5 rounded-xl font-bold hover:bg-[#1a1040]/80 transition shadow-md disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                        >
+                          {isSavingNewNumber ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            "Save Number"
+                          )}
                         </button>
-                        <button onClick={() => { setIsAdding(false); setNewNumber(""); }} className="w-full sm:w-auto px-8 py-3 sm:py-3.5 border-2 border-[#1a1040]/30 rounded-xl text-[#1a1040] font-bold hover:bg-white transition">
+                        <button
+                          onClick={() => { setIsAdding(false); setNewNumber(""); }}
+                          disabled={isSavingNewNumber}
+                          className="w-full sm:w-auto px-8 py-3 sm:py-3.5 border-2 border-[#1a1040]/30 rounded-xl text-[#1a1040] font-bold hover:bg-white transition disabled:opacity-50"
+                        >
                           Cancel
                         </button>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => setIsAdding(true)} className="mt-4 bg-[#00ff00] text-[#1a1040] px-6 py-3.5 sm:py-4 rounded-xl font-bold hover:bg-[#00e600] transition shadow-md w-full sm:w-fit flex items-center justify-center gap-3 sm:mx-auto">
+                    <button onClick={() => setIsAdding(true)} disabled={deletingId !== null} className="mt-4 bg-[#00ff00] text-[#1a1040] px-6 py-3.5 sm:py-4 rounded-xl font-bold hover:bg-[#00e600] transition shadow-md w-full sm:w-fit flex items-center justify-center gap-3 sm:mx-auto disabled:opacity-50">
                       <FaPhoneAlt /> Add New Number
                     </button>
                   )}

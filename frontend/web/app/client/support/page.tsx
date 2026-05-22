@@ -1,23 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import { FaPhoneAlt, FaCopy, FaCheck } from "react-icons/fa";
+import axios from "axios";
+import { useAuth } from "@/components/AuthProvider";
+import { useToast } from "@/components/Toast";
+import { useRouter } from "next/navigation";
 
 export default function ClientSupport() {
-  const [copiedId, setCopiedId] = useState<number | null>(null);
-  const [numbers] = useState([
-    { id: 1, value: "+234 801 234 5678" },
-    { id: 2, value: "+234 908 765 4321" },
-  ]);
+  const { user, loading: authLoading, isEnrolled, isEnrolledLoading } = useAuth();
+  const { addToast } = useToast();
+  const router = useRouter();
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [numbers, setNumbers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const redirectingRef = useRef(false);
 
-  const handleCopy = (id: number, text: string) => {
+  useEffect(() => {
+    if (authLoading || isEnrolledLoading) return;
+    if (!user) {
+      router.push("/client/sign-in");
+      return;
+    }
+
+    if (!isEnrolled) {
+      if (!redirectingRef.current) {
+        redirectingRef.current = true;
+        addToast("You must enroll in a program to access support details.", "error");
+        router.push("/client/programs");
+      }
+      return;
+    }
+
+    const fetchSupportAndEnrollments = async () => {
+      try {
+        const [supportRes, enrollmentsRes] = await Promise.all([
+          axios.get("http://localhost:4000/api/support"),
+          axios.get(`http://localhost:4000/api/enrollments?client_id=${user.id}`)
+        ]);
+
+        const mapped = (supportRes.data || []).map((num: any) => ({
+          id: num.id,
+          value: num.phone_number || num.value || ""
+        }));
+        setNumbers(mapped);
+      } catch (err) {
+        console.error("Failed to fetch support and enrollments:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSupportAndEnrollments();
+  }, [user, authLoading, isEnrolled, isEnrolledLoading, router, addToast]);
+
+  const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
+
+  if (authLoading || isEnrolledLoading) {
+    return (
+      <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <p className="font-bold text-lg">Checking dashboard access...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
@@ -61,7 +115,9 @@ export default function ClientSupport() {
                 <div className="flex flex-col w-full gap-4 max-w-2xl mx-auto">
                   
                   {/* Numbers List */}
-                  {numbers.length > 0 ? (
+                  {loading ? (
+                    <p className="text-center font-bold text-lg text-[#1a1040]">Loading support numbers...</p>
+                  ) : numbers.length > 0 ? (
                     numbers.map((num) => (
                       <div key={num.id} className="bg-[#f8f9fa] rounded-xl shadow-sm text-[#1a1040] p-4 flex justify-between items-center transition">
                         <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
