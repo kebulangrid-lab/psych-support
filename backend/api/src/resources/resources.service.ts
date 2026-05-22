@@ -14,6 +14,17 @@ export class ResourcesService {
       api_key: this.configService.get<string>('CLOUDINARY_API_KEY'),
       api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET'),
     });
+
+    // Ensure resources bucket exists in Supabase Storage
+    this.supabase.client.storage.createBucket('resources', { public: true })
+      .then(({ error }) => {
+        if (error && error.message !== 'Bucket already exists' && error.message !== 'The resource already exists') {
+          console.error('Failed to create/ensure Supabase bucket:', error.message);
+        }
+      })
+      .catch(err => {
+        console.error('Error ensuring Supabase bucket:', err);
+      });
   }
 
   async findAll(clientId?: string) {
@@ -72,13 +83,28 @@ export class ResourcesService {
 
   async create(file: Express.Multer.File, body: any) {
     try {
-      const cloudinaryResult = await this.uploadToCloudinary(file);
-      const cloudinaryUrl = cloudinaryResult.secure_url;
+      const uniquePath = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.pdf`;
+      const { data: uploadData, error: uploadError } = await this.supabase.client.storage
+        .from('resources')
+        .upload(uniquePath, file.buffer, {
+          contentType: 'application/pdf',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw new Error(`Supabase Storage upload failed: ${uploadError.message}`);
+      }
+
+      const { data: urlData } = this.supabase.client.storage
+        .from('resources')
+        .getPublicUrl(uniquePath);
+
+      const publicUrl = urlData.publicUrl;
 
       const insertData = {
         program_id: body.program_id,
         title: body.title,
-        cloudinary_url: cloudinaryUrl,
+        cloudinary_url: publicUrl,
         resource_type: 'pdf',
       };
 
@@ -91,7 +117,7 @@ export class ResourcesService {
       if (error) throw new InternalServerErrorException(error.message);
       return data;
     } catch (err: any) {
-      console.error('Cloudinary/Supabase upload error:', err);
+      console.error('Supabase upload error:', err);
       throw new InternalServerErrorException(err.message || 'Failed to upload and save resource.');
     }
   }
@@ -105,25 +131,42 @@ export class ResourcesService {
   async remove(id: string) {
     const resource = await this.findOne(id);
     if (resource && resource.cloudinary_url) {
-      try {
-        const url = resource.cloudinary_url;
-        const match = url.match(/\/([^\/]+)\/upload\/v\d+\/(.+)$/);
-        if (match) {
-          const resourceType = match[1];
-          const publicIdWithExt = match[2];
-          let publicId = publicIdWithExt;
-          if (resourceType !== 'raw') {
-            const lastDot = publicIdWithExt.lastIndexOf('.');
-            if (lastDot !== -1) {
-              publicId = publicIdWithExt.substring(0, lastDot);
+      const url = resource.cloudinary_url;
+      if (url.includes('supabase.co')) {
+        try {
+          const parts = url.split('/');
+          const filename = parts[parts.length - 1];
+          if (filename) {
+            const { error: deleteError } = await this.supabase.client.storage
+              .from('resources')
+              .remove([filename]);
+            if (deleteError) {
+              console.error(`Failed to delete asset from Supabase storage for resource ${id}:`, deleteError.message);
             }
           }
-          await cloudinary.uploader.destroy(publicId, {
-            resource_type: resourceType,
-          });
+        } catch (err: any) {
+          console.error(`Failed to delete asset from Supabase storage for resource ${id}:`, err);
         }
-      } catch (cloudinaryErr) {
-        console.error(`Failed to delete asset from Cloudinary for resource ${id}:`, cloudinaryErr);
+      } else {
+        try {
+          const match = url.match(/\/([^\/]+)\/upload\/v\d+\/(.+)$/);
+          if (match) {
+            const resourceType = match[1];
+            const publicIdWithExt = match[2];
+            let publicId = publicIdWithExt;
+            if (resourceType !== 'raw') {
+              const lastDot = publicIdWithExt.lastIndexOf('.');
+              if (lastDot !== -1) {
+                publicId = publicIdWithExt.substring(0, lastDot);
+              }
+            }
+            await cloudinary.uploader.destroy(publicId, {
+              resource_type: resourceType,
+            });
+          }
+        } catch (cloudinaryErr) {
+          console.error(`Failed to delete asset from Cloudinary for resource ${id}:`, cloudinaryErr);
+        }
       }
     }
 

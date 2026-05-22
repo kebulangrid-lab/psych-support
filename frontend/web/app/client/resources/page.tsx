@@ -74,6 +74,31 @@ export default function ClientResources() {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      addToast("Downloading resource...", "info");
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+      
+      addToast("Download completed!", "success");
+    } catch (err) {
+      console.error("Download error:", err);
+      addToast("Failed to download PDF. Please try again.", "error");
+    }
+  };
+
   if (authLoading || isEnrolledLoading) {
     return (
       <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden justify-center items-center">
@@ -156,15 +181,13 @@ export default function ClientResources() {
                                           {res.title || res.name || 'Resource'}.pdf
                                         </span>
                                       </div>
-                                      <a 
-                                        href={res.cloudinary_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                      <button 
+                                        onClick={() => handleDownload(res.cloudinary_url, `${res.title || 'Resource'}.pdf`)}
                                         className="text-blue-500 p-2 hover:bg-blue-50 rounded-md transition flex-shrink-0"
                                         title="Download Resource"
                                       >
                                         <FaDownload />
-                                      </a>
+                                      </button>
                                     </div>
                                   ))}
                                 </div>
