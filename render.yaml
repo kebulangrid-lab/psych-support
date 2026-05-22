@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: psych-support-backend
+    env: node
+    plan: free # Can be upgraded as needed
+    rootDir: backend/api
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: PORT
+        value: 4000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
