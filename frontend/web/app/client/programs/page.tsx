@@ -56,7 +56,7 @@ export default function ProgramsPage() {
       <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
         <div className="fixed inset-0 z-0 pointer-events-none">
           <Image
-            src="/landing.jpg"
+            src="/landing2.jpg"
             alt="Background"
             fill
             priority
@@ -105,7 +105,7 @@ export default function ProgramsPage() {
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
-          src="/landing.jpg"
+          src="/landing2.jpg"
           alt="Background"
           fill
           priority
@@ -117,7 +117,7 @@ export default function ProgramsPage() {
       <div>
         <Sidebar active="Programs" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
-          
+
           <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
@@ -136,9 +136,9 @@ export default function ProgramsPage() {
                 <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
                   {/* Left Column content - Icon block */}
                   <div className="w-[100px] h-[100px] sm:w-[120px] sm:h-[120px] bg-[#9c00ff] flex items-center justify-center flex-shrink-0 relative overflow-hidden hidden md:block">
-                     <Image src={currentProgram.thumbnail_url || "/pricingComplete.png"} alt={currentProgram.title} fill className="object-cover opacity-80 mix-blend-screen" />
+                    <Image src={currentProgram.thumbnail_url || "/pricingComplete.png"} alt={currentProgram.title} fill className="object-cover opacity-80 mix-blend-screen" />
                   </div>
-                
+
                   {/* Right Column content - Text block */}
                   <div className="flex flex-col flex-1 items-start text-left text-black/90 font-medium text-xs sm:text-sm leading-relaxed tracking-wide z-10 w-full">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-3 sm:mb-4 text-black">{currentProgram.title}</h2>
@@ -162,7 +162,7 @@ export default function ProgramsPage() {
                       Purchased
                     </button>
                   ) : (
-                    <button 
+                    <button
                       onClick={handleAccess}
                       className="bg-[#00ff00] text-black px-6 py-2 rounded-[4px] font-semibold text-xs sm:text-sm border border-black hover:bg-[#00ff00]/90 transition shadow-lg"
                     >
@@ -172,14 +172,14 @@ export default function ProgramsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button 
+                  <button
                     onClick={handlePrev}
                     disabled={currentIndex === 0}
                     className={`w-8 h-8 rounded-full border border-white flex items-center justify-center transition-all ${currentIndex === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"}`}
                   >
                     <FaArrowLeft className="text-sm" />
                   </button>
-                  <button 
+                  <button
                     onClick={handleNext}
                     disabled={currentIndex === programs.length - 1}
                     className={`w-8 h-8 rounded-full border border-white flex items-center justify-center transition-all ${currentIndex === programs.length - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-white/20"}`}

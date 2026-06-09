@@ -50,10 +50,10 @@ export default function PaymentPage() {
         payment_status: "completed",
         payment_reference: `PAY-${Math.random().toString(36).substring(2, 11).toUpperCase()}`
       });
-      
+
       // Refresh the global enrollment cache
       await refreshEnrollmentStatus();
-      
+
       router.push("/client/profile");
     } catch (err) {
       console.error("Error completing payment:", err);
@@ -86,11 +86,11 @@ export default function PaymentPage() {
     <main className="min-h-screen bg-[#1a1040] text-white flex flex-col relative overflow-x-hidden">
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Image
-            src="/landing.jpg"
-            alt="Background"
-            fill
-            priority
-            className="object-cover"
+          src="/landing2.jpg"
+          alt="Background"
+          fill
+          priority
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-purple-950/20" />
       </div>
@@ -98,7 +98,7 @@ export default function PaymentPage() {
       <div>
         <Sidebar active="Programs" />
         <div className="flex-1 sm:ml-[80px] pb-24 sm:pb-0 relative z-10 flex flex-col min-h-screen">
-          
+
           <div className="w-full flex justify-start px-8 pt-6 pb-0 min-h-[60px]" />
 
           <div className="flex-1 px-[12px] sm:px-8 sm:pt-6 pb-0 flex flex-col justify-start">
@@ -114,7 +114,7 @@ export default function PaymentPage() {
               </div>
 
               <div className="w-full bg-white text-black rounded-[12px] p-5 sm:p-6 md:p-8 flex flex-col shadow-2xl mt-2 max-w-3xl mx-auto">
-                
+
                 {/* Program Summary Card */}
                 <div className="w-full bg-purple-950/5 border border-purple-950/10 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                   <div>
@@ -131,7 +131,7 @@ export default function PaymentPage() {
 
                 <div className="flex flex-col gap-4">
                   {/* Card Payment Option */}
-                  <button 
+                  <button
                     onClick={handlePaymentComplete}
                     disabled={paying}
                     className={`border-2 border-blue-500 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-50/50"}`}
@@ -144,9 +144,9 @@ export default function PaymentPage() {
                         <h3 className="font-bold text-base sm:text-lg mb-1">{paying ? "Processing Payment..." : "Card Payment"}</h3>
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">Pay securely using your debit or credit card.</p>
                         <div className="flex gap-2 mt-2">
-                           {/* Placeholder for card logos like VISA, Mastercard, etc. */}
-                           <div className="h-5 w-8 bg-blue-800 rounded flex items-center justify-center text-[8px] text-white font-bold italic">VISA</div>
-                           <div className="h-5 w-8 bg-orange-500 rounded flex items-center justify-center text-[7px] text-white font-bold">MasterCard</div>
+                          {/* Placeholder for card logos like VISA, Mastercard, etc. */}
+                          <div className="h-5 w-8 bg-blue-800 rounded flex items-center justify-center text-[8px] text-white font-bold italic">VISA</div>
+                          <div className="h-5 w-8 bg-orange-500 rounded flex items-center justify-center text-[7px] text-white font-bold">MasterCard</div>
                         </div>
                       </div>
                     </div>
@@ -154,7 +154,7 @@ export default function PaymentPage() {
                   </button>
 
                   {/* Bank Transfer Option */}
-                  <button 
+                  <button
                     onClick={handlePaymentComplete}
                     disabled={paying}
                     className={`border-2 border-gray-200 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:border-green-500 hover:bg-green-50/50"}`}

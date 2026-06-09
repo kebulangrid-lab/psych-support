@@ -15,7 +15,7 @@ interface AuthFormProps {
 export default function AuthForm({ type, role }: AuthFormProps) {
   const isSignIn = type === "sign-in";
   const router = useRouter();
-  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,7 +32,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
       if (isSignIn) {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        
+
         // Use backend profile checks or simply assume proper route routing.
         if (data.user) {
           if (role === "client") {
@@ -56,7 +56,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
         if (password !== confirmPassword) {
           throw new Error("Passwords do not match");
         }
-        
+
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -67,9 +67,9 @@ export default function AuthForm({ type, role }: AuthFormProps) {
             }
           }
         });
-        
+
         if (error) throw error;
-        
+
         if (data.user) {
           if (role === "client") {
             try {
@@ -95,12 +95,12 @@ export default function AuthForm({ type, role }: AuthFormProps) {
       setLoading(false);
     }
   };
-  
+
   return (
     <main className="min-h-screen flex flex-col relative text-white overflow-hidden">
       <div className="fixed inset-0 -z-10">
         <Image
-          src="/landing.jpg"
+          src="/landing2.jpg"
           alt="Background"
           fill
           priority
@@ -111,7 +111,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
 
       <div className="flex-grow min-h-screen flex items-center justify-center p-4">
         <div className="w-full max-w-[550px] rounded-2xl border border-white/30 bg-white/10 backdrop-blur-xl p-6 md:p-8">
-          
+
           <h2 className="text-2xl font-bold text-center mb-4 uppercase tracking-widest text-white/90">
             {role} {isSignIn ? "Login" : "Register"}
           </h2>
@@ -145,7 +145,7 @@ export default function AuthForm({ type, role }: AuthFormProps) {
               className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
               required
             />
-            
+
             {!isSignIn && (
               <input
                 type="password"

@@ -2,13 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaRegUser } from "react-icons/fa";
 import Footer from "@/components/Footer";
+import UpcomingPrograms from "@/components/UpcomingPrograms";
 
 export default function Home() {
   return (
     <main className="min-h-screen overflow-x-hidden text-white">
       <div className="fixed inset-0 -z-10">
         <Image
-          src="/landing.jpg"
+          src="/landing2.jpg"
           alt="Background"
           fill
           priority
@@ -18,136 +19,124 @@ export default function Home() {
       </div>
 
       {/* Hero Section */}
-      <section className="min-h-screen py-20 px-4 flex flex-col items-center justify-center text-center gap-10">     
-        <div className="w-full max-w-lg rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:px-20 shadow-2xl mt-4">    
-          <div className="flex justify-center mb-2">
+      <section className="min-h-screen py-20 px-4 flex flex-col items-center justify-center text-center gap-10">
+        <div className="w-full max-w-4xl rounded-[20px] border border-white/40 bg-[#c6e4ff]/80 backdrop-blur-md p-8 shadow-2xl mt-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-8">
             <Image
-              src="/logo.jpg"
+              src="/logo2.jpg"
               alt="PsychSupport"
-              width={200}
-              height={200}
-              className="rounded-2xl"
+              width={160}
+              height={160}
+              className="object-contain"
             />
+            <div className="flex flex-col justify-center text-center md:text-left drop-shadow-md">
+              <h1 className="text-3xl md:text-4xl font-bold text-[#45366b]">
+                PsychSupport
+              </h1>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#45366b]">
+                and Educational Services
+              </h2>
+            </div>
           </div>
 
-          <h1 className="text-sm md:text-md leading-tight">
-            Building psychological capacity for effective adjustment and performance.
-          </h1>
-
-          <div className="flex flex-col items-center gap-1 mt-4">
-            <FaRegUser />
-            <p className="text-white/80 text-sm">
-              Continue As
-            </p>
-          </div>
-
-          {/* Buttons */}
-          <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
-            
-            <Link href="/admin/sign-in" className="px-20 py-2 rounded-xl border border-white/50 bg-[#45265B]/50 text-sm font-medium hover:bg-[#45265B]/60 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
-              Admin
-            </Link>
-            <Link href="/client/sign-in" className="px-20 py-2 rounded-xl border border-white/50 bg-[#45265B]/50 text-sm font-medium hover:bg-[#45265B]/60 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
-              Client
-            </Link>
-          </div>
-        </div>
-
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl mt-10">
-          <h2 className="text-xl md:text-3xl font-bold mb-6">
-            ABOUT US
-          </h2>
-          <p className="text-sm md:text-md text-white/85">
-            We at PES offer psychological support services and educational interventions
-            and consultancy. Continuous improvement on support for sustainable mental
-            health, adjustment and well-being, workplace productivity, and the effectiveness
-            of organisations is our core focus.
-            <br></br>
-            <br></br>
-            We support people to learn and develop the skills through structured coaching
-            and facilitation, counselling, and evidence-based intervention aimed at
-            improving psychological adjustment and well-being, behavioural functioning,
-            educational development, and organisational development.
-            <br></br>
-            <br></br>
-            The skills are key in preventing and controlling the triggers for psychological
-            disorders, maladaptive behaviour, substance abuse, habits that are toxic and
-            have direct and indirect negative impacts, and violence. Each service or
-            programme is designed to meet specific needs of individuals, groups, and
-            organisations.
+          <p className="text-md md:text-lg font-bold text-[#19193d] text-center w-full mt-10">
+            Building psychological capacity for effective adjustment and performance
           </p>
         </div>
 
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl">
-          <h2 className="text-xl md:text-3xl font-bold mb-6">
-            METHODOLOGY
-          </h2>
-          <p className="text-sm md:text-md text-white/85">      
-            Services at PES Ltd are available virtually and in person (online and onsite
-            delivery) to anyone who understands basic English. Our practice is based on
-            psychological principles, theories, methods to meet people's emerging need 
-            <br></br>
-            for
-            <br></br>
-            improvement and adjustment, improve education and human development, 
-            <br></br>and
-            <br></br>
-            human factor issues in organisations. The services are provided by a team of
-            highly skilled Psychologists with international experience in human
-            development.
-          </p>
+        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1">
+              <h2 className="text-lg md:text-xl font-bold mb-4 text-[#19193d]">
+                ABOUT US
+              </h2>
+              <p className="text-sm md:text-base text-[#19193d] font-medium leading-relaxed">
+                PES offers variety of psychological support services and educational interventions.
+                Our core focus is continuous improvement on sustainable mental health, psychological
+                adjustment and well-being, human performance, career and organizational development.
+                We support people to learn personal skills through structured coaching and facilitation,
+                training, counseling, and evidence-based interventions for improving mental and
+                behavioral functioning, personal growth, institutional and organizational development.
+              </p>
+            </div>
+            <div className="w-full md:w-2/5">
+              <Image
+                src="/landingsec1.jpg"
+                alt="About Us"
+                width={400}
+                height={400}
+                className="rounded-[20px] object-cover w-full h-[300px] shadow-lg"
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl">
-          <h2 className="text-xl md:text-3xl font-bold mb-6 text-left">
+        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="flex-1">
+              <h2 className="text-lg md:text-xl font-bold mb-4 text-[#19193d] uppercase">
+                METHODOLOGY
+              </h2>
+              <p className="text-sm md:text-base text-[#19193d] font-medium leading-relaxed">
+                Services at PES are available virtually and in person (online and onsite delivery).<br />
+                Our practice is based on psychological principles, theories, and techniques to meet people's emerging need for improvement on well-being, human performance, intervention, and education.<br />
+                Faculty: The services are provided by a team of highly skilled Psychologists with international experience in human development.
+              </p>
+            </div>
+            <div className="w-full md:w-2/5">
+              <Image
+                src="/landingsec2.jpg"
+                alt="Methodology"
+                width={400}
+                height={400}
+                className="rounded-[20px] object-cover w-full h-[300px] shadow-lg"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
+          <h2 className="text-lg md:text-xl font-bold mb-4 text-[#19193d] text-left uppercase">
             OUR SERVICES
           </h2>
-          <ul className="list-disc pl-6 text-sm md:text-md text-white/85 text-left">
-            <li>Basic psychological skills for people analytics.</li>
-            <li>Learning new perspectives for improvement and adjustment.</li>
-            <li>Skills for self-management of problems of the mind, emotions, and behaviour (including substance abuse and workplace violence).</li>
-            <li>Intervention services for sustainable mental health.</li>
-            <li>Train-the-trainers on skills for human development interventions.</li>
-            <li>Curriculum development for workforce improvement.</li>
-            <li>Attitudinal change skills.</li>
-            <li>Employee surveys, organisational analysis, and development.</li>
-            <li>Educational development and curriculum reviews.</li>
+          <ul className="text-sm md:text-base text-[#19193d] font-medium leading-relaxed text-left space-y-1">
+            <li>- Basic psychological skills for people analytics.</li>
+            <li>- Learning new perspectives for improvement and adjustment.</li>
+            <li>- Skills for self-management of problems of the mind, emotions, and behaviour (including substance abuse and workplace violence).</li>
+            <li>- Intervention services for sustainable mental health.</li>
+            <li>- Train-the-trainers on skills for human development interventions.</li>
+            <li>- Curriculum development for workforce improvement.</li>
+            <li>- Attitudinal change skills.</li>
+            <li>- Employees survey and organisational analysis and development.</li>
+            <li>- Educational development and curriculum reviews.</li>
           </ul>
         </div>
 
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl">
-          <h2 className="text-xl md:text-3xl font-bold mb-6">OUR MISSION</h2>
-          <p className="text-sm md:text-md text-white/85">
-            To be a psychological support and educational development provider of
-            psychological skills with integrity that expands capacity for adjustment and
-            continuous improvement..
+        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
+          <h2 className="text-lg md:text-xl font-bold mb-4 text-[#19193d] uppercase text-center">OUR VISION</h2>
+          <p className="text-sm md:text-base text-[#19193d] font-medium leading-relaxed text-center">
+            To be the psychological support and educational services provider with integrity that expands<br />
+            human development for continuous improvement.
           </p>
         </div>
 
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl">
-          <h2 className="text-xl md:text-3xl font-bold mb-6">OUR VISION</h2>
-          <p className="text-sm md:text-md text-white/85">
-            To empower people and organisations with knowledge and skills to function
-            effectively.
+        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
+          <h2 className="text-lg md:text-xl font-bold mb-4 text-[#19193d] uppercase text-center">OUR MISSION</h2>
+          <p className="text-sm md:text-base text-[#19193d] font-medium leading-relaxed text-center">
+            To be a psychological support and educational development provider of psychological skills with integrity that expands capacity for adjustment and continuous improvement..
           </p>
         </div>
 
-        <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-white/5 backdrop-blur-md p-4 md:p-6 md:px-16 shadow-2xl mb-20">
-          <h2 className="text-xl md:text-3xl font-bold mb-6">OBJECTIVES</h2>
-          <p className="text-sm md:text-md text-white/85">
-            We design specific intervention programmes that help people to recognise,
-            analyse, and control the issues that have negative psychosocial impact on
-            personal and career life, groups, and organisations.
-          </p>
-        </div>
-        
-        <div>
+        <UpcomingPrograms />
+
+
+        <div className="mt-20">
           <p className="text-white/80 text-3xl">Continue As</p>
           <div className="mt-4 flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/admin/sign-in" className="px-24 py-2 rounded-xl border border-white/50 bg-[#45265B]/50 text-xl font-medium hover:bg-[#45265B]/60 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
+            <Link href="/admin/sign-in" className="px-24 py-2 rounded-xl border border-white/50 bg-[#45265B]/80 text-xl font-medium hover:bg-[#45265B]/90 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
               Admin
             </Link>
-            <Link href="/client/sign-in" className="px-24 py-2 rounded-xl border border-white/50 bg-[#45265B]/50 text-xl font-medium hover:bg-[#45265B]/60 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
+            <Link href="/client/sign-in" className="px-24 py-2 rounded-xl border border-white/50 bg-[#45265B]/80 text-xl font-medium hover:bg-[#45265B]/90 hover:border-white/60 transition-all duration-300 cursor-pointer text-center">
               Client
             </Link>
           </div>
