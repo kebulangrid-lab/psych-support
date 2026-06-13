@@ -76,7 +76,8 @@ export default function ProgramsPage() {
   }
 
   const currentProgram = programs[currentIndex];
-  const isEnrolled = enrollments.some((e: any) => e.program_id === currentProgram.id);
+  const currentEnrollment = enrollments.find((e: any) => e.program_id === currentProgram.id);
+  const enrollmentStatus = currentEnrollment?.payment_status;
 
   const handleNext = () => {
     if (currentIndex < programs.length - 1) {
@@ -157,9 +158,16 @@ export default function ProgramsPage() {
               {/* Controls & Button */}
               <div className="flex justify-between items-center mt-2 px-1">
                 <div>
-                  {isEnrolled ? (
+                  {enrollmentStatus === 'completed' ? (
                     <button className="bg-gray-500 text-white px-6 py-2 rounded-[4px] font-semibold text-xs sm:text-sm border border-gray-600 cursor-not-allowed shadow-lg">
                       Purchased
+                    </button>
+                  ) : enrollmentStatus === 'waiting_to_verify' ? (
+                    <button 
+                      onClick={handleAccess}
+                      className="bg-yellow-500 text-black px-6 py-2 rounded-[4px] font-semibold text-xs sm:text-sm border border-yellow-600 hover:bg-yellow-400 transition shadow-lg"
+                    >
+                      Pending Verification
                     </button>
                   ) : (
                     <button

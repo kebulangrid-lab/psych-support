@@ -9,7 +9,6 @@ const sidebarLinks = [
   { name: "Time Table",     icon: "/icons/timeTable.png",     path: "time-table", roles: ["client", "admin"] },
   { name: "Resources",      icon: "/icons/resources.png",     path: "resources", roles: ["client", "admin"] },
   { name: "Track Learning", icon: "/icons/trackLearning.png", path: "track-learning", roles: ["client", "admin"] },
-  { name: "Payments",       icon: "/icons/support.png",       path: "payments", roles: ["admin"] },
   { name: "Support",        icon: "/icons/support.png",       path: "support", roles: ["client", "admin"] },
 ];
 

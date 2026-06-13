@@ -39,6 +39,29 @@ export default function PaymentPage() {
     fetchProgram();
   }, [programId, router]);
 
+  useEffect(() => {
+    if (!user || !programId) return;
+
+    // Check if already verified on load and start polling
+    const checkVerification = async () => {
+      try {
+        const res = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`);
+        const completed = res.data.find((e: any) => e.program_id === programId && e.payment_status === 'completed');
+        if (completed) {
+          await refreshEnrollmentStatus();
+          router.push("/client/profile");
+        }
+      } catch (err) {
+        console.error("Error checking verification:", err);
+      }
+    };
+
+    checkVerification();
+    const interval = setInterval(checkVerification, 5000);
+
+    return () => clearInterval(interval);
+  }, [user, programId, router, refreshEnrollmentStatus]);
+
   const handlePaymentComplete = async () => {
     if (!user || !program || paying) return;
     setPaying(true);

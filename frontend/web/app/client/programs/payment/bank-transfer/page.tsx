@@ -35,8 +35,15 @@ export default function BankTransferPage() {
 
         if (user) {
           const enrollRes = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`);
-          const enrollment = enrollRes.data.find((e: any) => e.program_id === programId && e.payment_status === 'waiting_to_verify');
-          if (enrollment) {
+          const enrollment = enrollRes.data.find((e: any) => e.program_id === programId);
+          
+          if (enrollment?.payment_status === 'completed') {
+            await refreshEnrollmentStatus();
+            router.push("/client/profile");
+            return;
+          }
+
+          if (enrollment?.payment_status === 'waiting_to_verify') {
             setExistingEnrollment(enrollment);
           }
         }
@@ -48,7 +55,24 @@ export default function BankTransferPage() {
     };
 
     fetchProgramAndEnrollment();
-  }, [programId, router, user]);
+
+    // Poll for verification status if already waiting
+    if (!user || !programId) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await axios.get(`https://psych-support-1.onrender.com/api/enrollments?client_id=${user.id}`);
+        const completed = res.data.find((e: any) => e.program_id === programId && e.payment_status === 'completed');
+        if (completed) {
+          await refreshEnrollmentStatus();
+          router.push("/client/profile");
+        }
+      } catch (err) {
+        // ignore polling errors
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [programId, router, user, refreshEnrollmentStatus]);
 
   const handlePaymentComplete = async () => {
     if (!user || !program || paying) return;
