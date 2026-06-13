@@ -38,7 +38,7 @@ export default function UpcomingPrograms() {
   if (programs.length === 0) {
     return (
       <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-white drop-shadow-md text-center tracking-wide">
+        <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold mb-4 text-white drop-shadow-md text-center tracking-wide">
           Programs
         </h1>
         <p className="text-sm md:text-base text-[#19193d] font-bold mb-8 text-center drop-shadow-sm">
@@ -73,10 +73,10 @@ export default function UpcomingPrograms() {
 
   return (
     <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
-      <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-white drop-shadow-md text-center tracking-wide">
+      <h1 className="text-2xl md:text-4xl lg:text-5xl font-extrabold mb-4 text-white drop-shadow-md text-center tracking-wide">
         Programs
       </h1>
-      <p className="text-sm md:text-base text-[#19193d] font-bold mb-8 text-center drop-shadow-sm">
+      <p className="text-[13px] md:text-base text-[#19193d] font-bold mb-8 text-center drop-shadow-sm">
         Explore our specialized programs designed to support growth, performance, and development.
       </p>
 
