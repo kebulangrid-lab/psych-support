@@ -155,7 +155,7 @@ export default function PaymentPage() {
 
                   {/* Bank Transfer Option */}
                   <button
-                    onClick={handlePaymentComplete}
+                    onClick={() => router.push(`/client/programs/payment/bank-transfer?programId=${programId}`)}
                     disabled={paying}
                     className={`border-2 border-gray-200 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:border-green-500 hover:bg-green-50/50"}`}
                   >

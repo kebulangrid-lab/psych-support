@@ -51,7 +51,10 @@ export default function AdminPrograms() {
       const res = await axios.post("https://psych-support-1.onrender.com/api/programs", {
         title: "New Program",
         description: "",
-        price: 0
+        price: 0,
+        bank_name: "",
+        account_name: "",
+        account_number: ""
       });
       setPrograms([res.data, ...programs]);
       setExpandedId(res.data.id);
@@ -159,6 +162,29 @@ export default function AdminPrograms() {
                                     placeholder="Program Price (₦)"
                                     className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-semibold"
                                   />
+                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <input 
+                                      type="text" 
+                                      value={prog.bank_name || ""}
+                                      onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, bank_name: e.target.value } : p))}
+                                      placeholder="Bank Name (e.g. Zenith Bank)"
+                                      className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-semibold"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={prog.account_name || ""}
+                                      onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, account_name: e.target.value } : p))}
+                                      placeholder="Account Name"
+                                      className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-semibold"
+                                    />
+                                    <input 
+                                      type="text" 
+                                      value={prog.account_number || ""}
+                                      onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, account_number: e.target.value } : p))}
+                                      placeholder="Account Number"
+                                      className="w-full bg-white border border-[#1a1040]/10 rounded-xl px-4 py-3 outline-none focus:border-[#1a1040]/30 transition font-semibold"
+                                    />
+                                  </div>
                                   <textarea 
                                     value={prog.description || ""}
                                     onChange={(e) => setPrograms(programs.map(p => p.id === prog.id ? { ...p, description: e.target.value } : p))}
@@ -170,13 +196,25 @@ export default function AdminPrograms() {
                                 <>
                                   <h3 className="font-bold text-lg md:text-xl text-[#1a1040]">{prog.title || "Untitled Program"}</h3>
                                   <p className="font-bold text-sm text-[#1a1040]/70">Price: ₦{prog.price !== undefined ? Number(prog.price).toFixed(2) : "0.00"}</p>
+                                  {(prog.bank_name || prog.account_name || prog.account_number) && (
+                                    <p className="font-bold text-sm text-[#1a1040]/70">
+                                      Bank: {prog.bank_name || "N/A"} | Acct: {prog.account_name || "N/A"} | No: {prog.account_number || "N/A"}
+                                    </p>
+                                  )}
                                   <p className="text-[#1a1040]/80 whitespace-pre-wrap">{prog.description || "No description available."}</p>
                                 </>
                               )}
                               <div className="flex gap-4 mt-2">
                                   {editingId === prog.id ? (
                                     <button 
-                                      onClick={() => handleUpdate(prog.id, { title: prog.title, description: prog.description, price: Number(prog.price || 0) })} 
+                                      onClick={() => handleUpdate(prog.id, { 
+                                        title: prog.title, 
+                                        description: prog.description, 
+                                        price: Number(prog.price || 0),
+                                        bank_name: prog.bank_name,
+                                        account_name: prog.account_name,
+                                        account_number: prog.account_number
+                                      })} 
                                       disabled={savingId === prog.id || deletingId === prog.id} 
                                       className="bg-[#00ff00] text-[#1a1040] px-8 py-2.5 rounded-xl font-bold hover:bg-[#00e600] transition shadow-sm disabled:opacity-50 inline-flex items-center justify-center gap-2"
                                     >

@@ -81,6 +81,33 @@ export class ResourcesService {
     });
   }
 
+  private uploadImageToCloudinary(file: Express.Multer.File): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'psych-support-proofs',
+          public_id: uniqueId,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        },
+      );
+      uploadStream.end(file.buffer);
+    });
+  }
+
+  async uploadImageOnly(file: Express.Multer.File) {
+    try {
+      const uploadResult = await this.uploadImageToCloudinary(file);
+      return { url: uploadResult.secure_url };
+    } catch (err: any) {
+      console.error('Cloudinary upload error:', err);
+      throw new InternalServerErrorException(err.message || 'Failed to upload image.');
+    }
+  }
+
   async create(file: Express.Multer.File, body: any) {
     try {
       const uniquePath = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.pdf`;
