@@ -155,25 +155,24 @@ export default function PaymentPage() {
                 <div className="flex flex-col gap-4">
                   {/* Card Payment Option */}
                   <button
-                    onClick={handlePaymentComplete}
-                    disabled={paying}
-                    className={`border-2 border-blue-500 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group ${paying ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-50/50"}`}
+                    disabled={true}
+                    className="border-2 border-gray-200 rounded-xl p-4 sm:p-5 flex items-center justify-between transition group opacity-60 cursor-not-allowed bg-gray-50/30"
                   >
                     <div className="flex items-center gap-4 sm:gap-6">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-100 rounded-xl flex items-center justify-center text-blue-500 text-2xl sm:text-3xl">
-                        {paying ? <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" /> : <FaCreditCard />}
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200 rounded-xl flex items-center justify-center text-gray-400 text-2xl sm:text-3xl">
+                        <FaCreditCard />
                       </div>
                       <div className="text-left">
-                        <h3 className="font-bold text-base sm:text-lg mb-1">{paying ? "Processing Payment..." : "Card Payment"}</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 font-medium">Pay securely using your debit or credit card.</p>
-                        <div className="flex gap-2 mt-2">
+                        <h3 className="font-bold text-gray-500 text-base sm:text-lg mb-1">Card Payment (Disabled)</h3>
+                        <p className="text-xs sm:text-sm text-gray-400 font-medium">Card payment is currently unavailable.</p>
+                        <div className="flex gap-2 mt-2 grayscale opacity-50">
                           {/* Placeholder for card logos like VISA, Mastercard, etc. */}
                           <div className="h-5 w-8 bg-blue-800 rounded flex items-center justify-center text-[8px] text-white font-bold italic">VISA</div>
                           <div className="h-5 w-8 bg-orange-500 rounded flex items-center justify-center text-[7px] text-white font-bold">MasterCard</div>
                         </div>
                       </div>
                     </div>
-                    <FaChevronRight className="text-blue-500 text-lg sm:text-xl group-hover:translate-x-1 transition-transform" />
+                    <FaChevronRight className="text-gray-300 text-lg sm:text-xl" />
                   </button>
 
                   {/* Bank Transfer Option */}

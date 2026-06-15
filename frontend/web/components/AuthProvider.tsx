@@ -119,8 +119,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const checkProtectedRoutes = (currentUser: User | null | undefined, currentPath: string | null) => {
     if (!currentPath) return;
     
-    const isAdminRoute = currentPath.startsWith('/admin') && !currentPath.includes('sign-in') && !currentPath.includes('sign-up');
-    const isClientRoute = currentPath.startsWith('/client') && !currentPath.includes('sign-in') && !currentPath.includes('sign-up');
+    const isAuthRoute = currentPath.includes('sign-in') || currentPath.includes('sign-up');
+    const isAdminRoute = currentPath.startsWith('/admin') && !isAuthRoute;
+    const isClientRoute = currentPath.startsWith('/client') && !isAuthRoute;
+
+    if (currentUser && isAuthRoute) {
+      const role = currentUser.user_metadata?.role;
+      if (role === 'ADMIN') {
+        router.push('/admin/profile');
+      } else {
+        router.push('/client/profile');
+      }
+      return;
+    }
 
     if (isAdminRoute || isClientRoute) {
       if (!currentUser) {
