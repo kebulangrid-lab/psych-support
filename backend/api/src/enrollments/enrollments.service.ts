@@ -17,7 +17,7 @@ export class EnrollmentsService {
   }
 
   async findAll(clientId?: string) {
-    let query = this.supabase.client.from('enrollments').select('*, profiles(full_name)');
+    let query = this.supabase.client.from('enrollments').select('*, profiles(full_name, country_code, mobile_number)');
     if (clientId) {
       query = query.eq('client_id', clientId);
     }
@@ -27,7 +27,7 @@ export class EnrollmentsService {
   }
 
   async findOne(id: string) {
-    const { data, error } = await this.supabase.client.from('enrollments').select('*, profiles(full_name)').eq('id', id).single();
+    const { data, error } = await this.supabase.client.from('enrollments').select('*, profiles(full_name, country_code, mobile_number)').eq('id', id).single();
     if (error) throw new NotFoundException('Record not found');
     return data;
   }

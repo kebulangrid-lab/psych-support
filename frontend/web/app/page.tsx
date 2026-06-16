@@ -123,7 +123,7 @@ export default function Home() {
         <div className="w-full max-w-5xl rounded-[20px] border border-white/40 bg-[#d8e8fa]/60 backdrop-blur-md p-6 md:p-10 shadow-2xl mt-10">
           <h2 className="text-base md:text-xl font-bold mb-2 md:mb-4 text-[#19193d] uppercase text-center">OUR MISSION</h2>
           <p className="text-[13px] md:text-base text-[#19193d] font-medium leading-relaxed text-center">
-            To be a psychological support and educational development provider of psychological skills with integrity that expands capacity for adjustment and continuous improvement..
+            To empower people and organizations with knowledge and skills for adjustment and continuous improvement.
           </p>
         </div>
 

@@ -35,10 +35,12 @@ export default function AdminTrackLearning() {
 
           const profileObj = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
           const clientName = profileObj?.full_name || `User ID: ${(e.client_id || e.user_id || "").substring(0, 8)}...`;
+          const phone = profileObj?.mobile_number ? `${profileObj.country_code || ''} ${profileObj.mobile_number}`.trim() : "N/A";
 
           return {
             id: e.id,
             name: clientName,
+            phone,
             program: prog?.title || prog?.name || `Program ${e.program_id}`,
             amount: amountStr,
             date: new Date(e.enrolled_at || e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -71,10 +73,12 @@ export default function AdminTrackLearning() {
 
         const profileObj = Array.isArray(e.profiles) ? e.profiles[0] : e.profiles;
         const clientName = profileObj?.full_name || `User ID: ${(e.client_id || e.user_id || "").substring(0, 8)}...`;
+        const phone = profileObj?.mobile_number ? `${profileObj.country_code || ''} ${profileObj.mobile_number}`.trim() : "N/A";
 
         return {
           id: e.id,
           name: clientName,
+          phone,
           program: prog?.title || prog?.name || `Program ${e.program_id}`,
           amount: amountStr,
           date: new Date(e.enrolled_at || e.created_at || Date.now()).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -145,8 +149,8 @@ export default function AdminTrackLearning() {
                 </div>
               </div>
 
-              <div className="w-full bg-[#8c97a7] rounded-xl min-h-[350px] mt-2 shadow-lg text-[#1a1040] p-6 sm:p-8 relative flex flex-col">
-                <div className="hidden md:grid grid-cols-5 items-center font-bold text-lg md:text-xl mb-6 border-b border-[#1a1040]/10 pb-4">
+              <div className="w-full bg-[#8c97a7] rounded-xl min-h-[350px] mt-2 shadow-lg text-[#1a1040] p-4 sm:p-5 relative flex flex-col">
+                <div className="hidden md:grid grid-cols-5 items-center font-bold text-sm md:text-base mb-4 border-b border-[#1a1040]/10 pb-3">
                   <div>User</div>
                   <div>Program/Plan</div>
                   <div>Amount</div>
@@ -154,39 +158,42 @@ export default function AdminTrackLearning() {
                   <div>Status / Action</div>
                 </div>
 
-                <div className="flex flex-col gap-4 md:gap-6 w-full mt-2 md:mt-0">
+                <div className="flex flex-col gap-3 md:gap-4 w-full mt-2 md:mt-0">
                   {loading ? (
-                    <p className="text-center italic mt-4 font-bold text-lg">Loading enrollments...</p>
+                    <p className="text-center italic mt-4 font-bold text-sm">Loading enrollments...</p>
                   ) : payments.length > 0 ? (
                     payments.map((payment) => (
-                      <div key={payment.id} className={`bg-white/40 md:bg-transparent rounded-xl p-4 md:p-0 grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-0 items-start md:items-center border-b border-[#1a1040]/10 md:pb-6 w-full last:border-0 last:pb-0 shadow-sm md:shadow-none ${payment.status === 'waiting_to_verify' ? 'bg-yellow-100/50 md:bg-yellow-100/20 md:p-2 md:-mx-2 rounded-lg' : ''}`}>
+                      <div key={payment.id} className={`bg-white/40 md:bg-transparent rounded-xl p-3 md:p-0 grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-0 items-start md:items-center border-b border-[#1a1040]/10 md:pb-3 w-full last:border-0 last:pb-0 shadow-sm md:shadow-none ${payment.status === 'waiting_to_verify' ? 'bg-yellow-100/50 md:bg-yellow-100/20 md:p-2 md:-mx-2 rounded-lg' : ''}`}>
                         
-                        <div className="flex flex-col gap-2 md:gap-4 order-1 md:order-none pb-2 md:pb-0 border-b border-[#1a1040]/5 md:border-0">
-                          <span className="opacity-90 font-bold md:font-medium text-lg md:text-xl text-[#1a1040]">{payment.name}</span>
+                        <div className="flex flex-col gap-1 md:gap-1 order-1 md:order-none pb-2 md:pb-0 border-b border-[#1a1040]/5 md:border-0">
+                          <span className="opacity-90 font-bold md:font-medium text-sm md:text-base text-[#1a1040]">{payment.name}</span>
+                          {payment.phone !== "N/A" && (
+                            <span className="opacity-75 text-[11px] md:text-xs font-semibold text-[#1a1040]">{payment.phone}</span>
+                          )}
                         </div>
 
                         <div className="flex flex-col md:block order-2 md:order-none">
-                          <span className="md:hidden font-bold text-[11px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Program/Plan</span>
-                          <span className="opacity-90 font-semibold md:font-medium text-[15px] md:text-base text-[#1a1040]">{payment.program}</span>
+                          <span className="md:hidden font-bold text-[10px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Program/Plan</span>
+                          <span className="opacity-90 font-semibold md:font-medium text-sm text-[#1a1040]">{payment.program}</span>
                         </div>
 
                         <div className="flex justify-between items-center md:hidden order-3">
                           <div className="flex flex-col">
-                            <span className="font-bold text-[11px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Amount</span>
-                            <span className="opacity-90 font-bold text-[15px] text-[#1a1040]">{payment.amount}</span>
+                            <span className="font-bold text-[10px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Amount</span>
+                            <span className="opacity-90 font-bold text-sm text-[#1a1040]">{payment.amount}</span>
                           </div>
                           <div className="flex flex-col text-right">
-                             <span className="font-bold text-[11px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Date</span>
-                             <span className="opacity-90 font-semibold text-[15px] text-[#1a1040]">{payment.date}</span>
+                             <span className="font-bold text-[10px] uppercase tracking-wider opacity-60 mb-0.5 text-[#1a1040]">Date</span>
+                             <span className="opacity-90 font-semibold text-sm text-[#1a1040]">{payment.date}</span>
                           </div>
                         </div>
 
                         <div className="hidden md:block order-none">
-                          <span className="opacity-90 font-medium text-base text-[#1a1040]">{payment.amount}</span>
+                          <span className="opacity-90 font-medium text-sm text-[#1a1040]">{payment.amount}</span>
                         </div>
 
                         <div className="hidden md:block order-none">
-                           <span className="opacity-90 font-medium text-base text-[#1a1040]">{payment.date}</span>
+                           <span className="opacity-90 font-medium text-sm text-[#1a1040]">{payment.date}</span>
                         </div>
 
                         <div className="flex flex-col md:flex-row items-center gap-2 order-4 md:order-none mt-2 md:mt-0 pt-2 md:pt-0 border-t border-[#1a1040]/10 md:border-t-0">

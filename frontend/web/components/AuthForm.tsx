@@ -20,6 +20,8 @@ export default function AuthForm({ type, role }: AuthFormProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [countryCode, setCountryCode] = useState("+1");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +66,8 @@ export default function AuthForm({ type, role }: AuthFormProps) {
             data: {
               full_name: fullName,
               role: role.toUpperCase(),
+              country_code: countryCode,
+              mobile_number: mobileNumber,
             }
           }
         });
@@ -120,14 +124,34 @@ export default function AuthForm({ type, role }: AuthFormProps) {
 
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             {!isSignIn && (
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
-                required
-              />
+              <>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
+                  required
+                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="+1"
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="w-1/3 max-w-[100px] px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium text-center"
+                    required
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Mobile Number"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value)}
+                    className="flex-1 px-4 py-3 rounded-2xl text-black bg-white focus:outline-none focus:ring-4 focus:ring-white/20 placeholder-gray-500 font-medium"
+                    required
+                  />
+                </div>
+              </>
             )}
             <input
               type="email"

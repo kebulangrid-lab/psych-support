@@ -37,7 +37,7 @@ export default function Footer() {
 
             <div className="flex items-center gap-2">
               <FaWhatsapp className="text-green-500 text-2xl md:text-3xl" />
-              <span className="text-[10px] md:text-sm font-light">+234 802 300 7369</span>
+              <span className="text-[10px] md:text-sm font-light">+234 705 760 4930</span>
             </div>
           </div>
         </div>
